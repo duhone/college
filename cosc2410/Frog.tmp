@@ -1,0 +1,42 @@
+
+
+Should wait no longer than 2 sec here
+Answer should be BadRdx BadRdx
+
+
+Converted  5 chars - Answer should be 5
+Answer should be -32768 -32768
+
+Converted  5 chars - Answer should be 5
+Answer should be +32767 +32767
+
+Converted  3 chars - Answer should be 3
+Answer should be   +123   +123
+
+Converted  1 chars - Answer should be 1
+Answer should be     +0     +0
+
+
+Converted  4 chars - Answer should be 4
+Answer should be 0FFFFh 0FFFFh
+
+Converted  4 chars - Answer should be 4
+Answer should be 07FFFh 07FFFh
+
+Converted  4 chars - Answer should be 4
+Answer should be 00000h 00000h
+
+
+Converted  5 chars - Answer should be 5
+Answer should be  65535  65535
+
+Converted  5 chars - Answer should be 5
+Answer should be  32768  32768
+
+Converted  1 chars - Answer should be 1
+Answer should be      0      0
+
+
+Variable i currently has: -26506 in it (as signed)
+Variable i currently has:  39030 in it (as unsigned)
+Variable i currently has: 09876h in it (as hex)

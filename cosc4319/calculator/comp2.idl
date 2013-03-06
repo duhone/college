@@ -1,0 +1,46 @@
+// comp2.idl : IDL source for comp2.dll
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (comp2.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+	[
+		object,
+		uuid(96CCE1ED-8884-48C7-A128-770A5A0FB178),
+		dual,
+		helpstring("Icomputation2 Interface"),
+		pointer_default(unique)
+	]
+	interface Icomputation2 : IDispatch
+	{
+		[id(1), helpstring("method ClearList")] HRESULT ClearList();
+		[id(2), helpstring("method AddNumList")] HRESULT AddNumList([in]double arg);
+		[id(3), helpstring("method CalcAvg")] HRESULT CalcAvg([out]double* dResult);
+		[id(4), helpstring("method CalcSum")] HRESULT CalcSum([out]double* dResult);
+		[id(5), helpstring("method StdDev")] HRESULT StdDev([out]double* dResult);
+		[id(6), helpstring("method NPR")] HRESULT NPR([in]double dN,[in]double dR,[out]double* dResult);
+		[id(7), helpstring("method NCR")] HRESULT NCR([in]double dN,[in]double dR,[out]double* dResult);
+		[id(8), helpstring("method Factorial")] HRESULT Factorial([in]double dN,[out]double* dResult);
+	};
+
+[
+	uuid(84BF7034-9D35-43BD-9B19-95D74548C2F4),
+	version(1.0),
+	helpstring("comp2 1.0 Type Library")
+]
+library COMP2Lib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	[
+		uuid(03A6F446-ADE0-4315-8F16-CF28C865F3ED),
+		helpstring("computation2 Class")
+	]
+	coclass computation2
+	{
+		[default] interface Icomputation2;
+	};
+};

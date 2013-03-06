@@ -1,0 +1,95 @@
+/***************************************************************
+	 Name:Eric Duhon			    Assignment #3
+	 SS#: 453-97-8531		    	 Filename: grades.c
+	 COSC 1410			    	    Due Date: 16 FEB 99
+	 Section: 07007			    Turned in: 16 FEB 99
+****************************************************************/
+
+/* Program calculates average grades for a class with an arbitrary
+	number of students and tests. */
+
+#include<stdio.h>
+
+void main()
+{
+ /*declarations*/
+ char exit;
+ int numbscores,id,onescore,tnumba,tnumbb,tnumbc,tnumbd,tnumbf,tnumbi,counter,numbi;
+ int sum;
+ float avg;
+ id = 0;
+ clrscr();
+ /*get number of grades each student has*/
+ printf("Enter the number of grades each student has ");
+ scanf("%d",&numbscores);
+ /*get grades for all students*/
+	for(counter = 0;counter < 40;counter++) printf("=");
+	printf("\nEnter student id(enter -1 to end) ");
+	scanf("%d",&id);
+
+ while(id != -1)
+  {
+	numbi = 0;
+	sum = 0;
+	for(counter = 0;counter < numbscores; counter++)
+	 {
+	  printf("Enter a score: ");
+	  scanf("%d",&onescore);
+	  if(onescore < 0)
+		{
+		 numbi += 1;
+		}
+		else
+		 {
+		  sum += onescore;
+		 }
+	  /*output individual average*/
+	 }
+	avg = (float)sum / (numbscores - numbi);
+	printf("ID=%d AVG=%.1f ",id,avg);
+	if(numbi <= 1)
+	 {
+	  if(avg >=90)
+		{
+		 printf("Grade = A");
+		 tnumba +=1;
+		}
+	  else if(avg >= 80)
+		{
+		 printf("Grade = B");
+		 tnumbb += 1;
+		}
+	  else if(avg >= 70)
+		{
+		 printf("Grade = C");
+		 tnumbc += 1;
+		}
+	  else if(avg >= 60)
+		{
+		 printf("Grade = D");
+		 tnumbd += 1;
+		}
+	  else
+		{
+		 printf("Grade = F");
+		 tnumbf += 1;
+		}
+	 }
+	else
+	 {
+	  printf("Grade = I");
+	  tnumbi += 1;
+	 }
+	printf("\n");
+	for(counter = 0;counter < 40;counter++) printf("=");
+	printf("\nEnter student id(enter -1 to end) ");
+	scanf("%d",&id);
+
+  }
+ /*exit code*/
+ printf("\n\nNumber Of Students Who Made");
+ printf("\n  A  B  C  D  F  I");
+ printf("\n%2d%2d%2d%2d%d%d",tnumba,tnumbb,tnumbc,tnumbd,tnumbf,tnumbi);
+ printf("\n\nPress any key to exit program.");
+ exit = getch();
+}

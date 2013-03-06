@@ -1,0 +1,30 @@
+Hello! there
+
+First char in the string is H
+
+20th char in the string is Access attempt position 19 on string of size 13
+
+Now you may create your own string:
+
+some value
+You entered:some
+
+First char in the string is s
+
+20th char in the string is Access attempt position 19 on string of size 4
+
+Hello! there some
+
+First char in the string is H
+
+20th char in the string is Access attempt position 19 on string of size 17
+
+Hillo! there
+
+First char in the string is H
+
+20th char in the string is Access attempt position 19 on string of size 13
+
+Given String is  not empty
+
+Given String is empty                                                          

@@ -1,0 +1,70 @@
+title	color bars
+comment ~********************************
+	Name:Eric Duhon
+	SSN: 453-97-8531
+	Date:Oct 18,1999
+	Purpose:This program displays a series of color bars
+		in text mode.
+~	 ********************************
+
+	.model	  small
+	.486
+	.stack	 100h
+	.dosseg
+      .data
+	attrmask BYTE 0
+      .code
+main proc
+        .Startup             ;needed for "main"
+	mov ax,3	     ;set video mode
+	int 10h
+
+	mov ax,600	      ;clear the screen
+	mov cx,0
+	mov dx,184fh
+	mov bh,7
+	int 10h
+
+	mov ax,902h		;write character with attribute
+	mov bx,0		;video page
+	mov dx,512h		;row
+	mov cl,00001111b
+	mov attrmask,cl
+	mov cx,1		;only once
+outerloop:
+
+
+innerloop:
+	mov ah,2	      ;resets the cursor position to
+	int 10h
+	mov ah,9
+	inc dh
+	int 10h
+	cmp dh,20
+	jne innerloop
+
+	mov dh,5
+	inc dl
+	.if(dl < 40)
+	 inc bl
+	.else
+	 add bl,10h
+	.endif
+	.if(dl == 34)
+	 mov cl,01110000b
+	 mov dl,44
+	 mov attrmask,cl
+	 mov al,1
+	 mov bl,0
+	 mov cx,1
+	.endif
+	and bl,attrmask
+	cmp dl,60
+	jne outerloop
+
+	.Exit		     ;return back to the OS
+Main   endp
+
+
+
+end

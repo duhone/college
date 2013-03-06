@@ -1,0 +1,60 @@
+// assign2.idl : IDL source for assign2.dll
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (assign2.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+	[
+		object,
+		uuid(F621F82B-39D7-4CD8-A2AD-DF6B70880C84),
+		dual,
+		helpstring("IGasReservoir Interface"),
+		pointer_default(unique)
+	]
+	interface IGasReservoir : IDispatch
+	{
+		[id(1), helpstring("method drainGas")] HRESULT drainGas([in]int grade,[in]double amount);
+	};
+	[
+		object,
+		uuid(168BF217-DD5B-4406-8DAB-6731421B0063),
+		dual,
+		helpstring("IGasFiller Interface"),
+		pointer_default(unique)
+	]
+	interface IGasFiller : IDispatch
+	{
+		[id(1), helpstring("method fillTank")] HRESULT fillTank([in]int grade,[in] double amount);
+		[id(2), helpstring("method getTankCapacity")] HRESULT getTankCapacity([in]int grade,[out]double *pCapacity);
+		[id(3), helpstring("method getGasLevel")] HRESULT getGasLevel([in]int grade,[out]double *pLevel);
+	};
+
+[
+	uuid(917B1F42-DA08-45F1-9FD3-7FF1F3574C6C),
+	version(1.0),
+	helpstring("assign2 1.0 Type Library")
+]
+library ASSIGN2Lib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	[
+		uuid(8628F9C5-2B0C-400F-BE78-5B1482E7736D),
+		helpstring("GasReservoir Class")
+	]
+	coclass GasReservoir
+	{
+		[default] interface IGasReservoir;
+	};
+	[
+		uuid(C2BF3D02-DE1B-41EC-AB8B-3A21E4BC4697),
+		helpstring("GasFiller Class")
+	]
+	coclass GasFiller
+	{
+		[default] interface IGasFiller;
+	};
+};

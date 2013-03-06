@@ -1,0 +1,106 @@
+COSC2320                          Program 2
+
+Write a program that reads lines of text from a text file, extracts  
+the words from the text and stores each  word, an associated list of  
+the lines on which the word occurs and a count of how many times the word
+occurs. Then output an alphabetical list of the words in the file and the 
+count of how many times each word occurs. The output should look like the
+following:
+
+a                  19   (assuming a occurs 19 times in the file)
+big                 2
+disrespectful       1
+...
+the               104
+...
+
+The program should then repeatedly  prompt the user for a word, look it up
+and output a list of all lines that it occurs on or the message "This
+word does not occur in the file.". The i/o should look like the following:
+
+At each prompt enter a word or # to quit.
+Enter a word: BIG
+   15  274
+Enter a word: alright
+   This word does not occur in the file.
+Enter a word: a
+    1   17   17   57   84   97  105  107  114  128  133  133
+  149  187  189  193  201  215  276
+Enter a word: #
+
+This program needs to repeatedly look-up a word to see if it is  
+already stored and if so add the new line number to the associated  
+list of line numbers and increment the count of how many times the word
+occurs. If the word is not stored then it needs to store it together 
+with a new list which contains one line number and a count of 1. It  
+also needs to output the words in alphabetical order. The ability to  
+look-up keys (words) efficiently and output the keys in order is  
+nicely provided by a binary search tree. The keys in the tree will be  
+the words (type char* because words will be stored in dynamically  
+allocated storage) and the associated data will be the lists of line  
+numbers and counts. The line numbers should be kept in linked lists that
+are similar to queues (type Qlist). You should have pointers to the front  
+and rear of the lists. The only operations we need on a Qlist are 
+
+Qlist NewQlist(int n)
+  Creates a new Qlist with only one value in the list, the value of n.
+
+void InsertQlist(int n, Qlist q)
+  Inserts the value n into the rear of q.
+
+void OutputQlist(Qlist q) 
+  Ouputs all the values in q from front to rear (which will be from  
+  smallest to largest line number) with each number in a field of width  
+  5 and with at most 12 numbers per line,
+
+Implement a Qlist as an ADT with its own header file and  
+implementation file. The type Qlist should be a pointer to a  
+structure with front and rear members that are pointers. Note that it  
+is important that the pointers in the linked list point in the  
+direction from the front node to the rear node so that the output  
+operation can be done efficiently. The header file should be called
+qlist.h and the implementation file qlist.c.
+ 
+Your program needs to input lines of text from a text file, extract  
+words from the the lines and keep track of which line each word was  
+extracted from. The first line of text should be considered line  
+number 1. For this program a word is defined as any consecutive  
+sequence of letters and/or digits that starts with a letter. Any
+character other than a letter or digit is not part of a word (the 
+functions isalpha(c), isalnum(c) in the character handling library will be 
+useful, include <ctype.h>). For example if a line is "part7;quantity=15" 
+then the 2 words extracted from this line should be "part7", "quantity".
+Also we want all the letters in words to be in lower case so either make 
+sure upper case letters are changed to lower case letters when the line is 
+inputted or as the words are extracted (use the function tolower(c) in the 
+character handling library). For example if the value inputted for the line  
+were "PART7;Quantity=15" then the same words "part7", "quantity",  should 
+be extracted. Store each extracted word in dynamically allocated storage of 
+exactly the length of the word + 1 (so there is room for the terminating null 
+character '\0'). The extracted words need to have '\0' at their ends so that 
+the string library function strcmp can be used to compare them. All the string 
+library functions assume that strings are null terminated.
+
+This program can also serve to test how well  balanced a binary  
+search tree constructed from real test data is compared to the ideal  
+of a perfectly balanced tree. A perfectly balanced binary tree with n  
+nodes in it would have a height of floor(log2(n)). This could be computed 
+in C as floor(log(n)/log(2)). These functions are in the math library so 
+include <math.h> and compile the program using the link math library option, 
+i.e. gcc -lm source_files. Use the operations SizeBST and HeightBST to
+compute and output the size of the tree,  the height of the tree, the height 
+of a perfectly balanced tree with the same number of nodes and the ratio of 
+the actual height to the height of the perfectly balanced tree so we can see 
+how well balanced the actual tree is. Do this at the end of the program.
+
+Note that you can work on implementing the Qlist ADT and the process  
+of inputting lines of text and extracting words before we even  
+discuss binary search trees. Your program should ask the user for the  
+file name of the text file from which the words will be extracted. It  
+then inputs this file name, opens the file and does the input. You
+should get all this written and tested first. 
+
+Once you have this done, you can work on the binary search tree operations. I 
+have written the header file bst.h and part of the implementation file bst.c. 
+You should copy these files from my directory. Complete the code in bst.c
+and then use these operations to complete your program. 

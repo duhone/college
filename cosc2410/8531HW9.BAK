@@ -1,0 +1,58 @@
+title	addbcd
+comment ~********************************
+	Name:Eric Duhon
+	SSN: 453-97-8531
+	Date:Oct 25,1999
+	Purpose:This c callable function inputs 2 numeric strings and
+		adds them together. the result is a string returned in ans
+~	 ********************************
+	.286
+	.387
+	.model	  small,c
+
+     .data
+       result real8 0.0
+       data   real8 2.5
+       data1  real8 1.0
+     .code
+Euler proc near c input:real8
+     fld input
+     fld input
+     fyl2x
+     f2xm1
+     fld1
+     fadd
+     fld input
+     fld data
+     fmulp
+     fsin
+
+
+     fsub
+     fst result
+     fwait
+     mov ax,offset result			;done so return with no error
+     clc
+     ret
+Euler	endp
+
+ClrScrn proc c col:byte , row:byte
+
+	mov ah,6	      ;clear the screen
+	mov al,0	       ;using scrolling up
+	mov ch,0
+	mov cl,0
+	mov dh,24
+	mov dl,79
+	mov bh,7
+	int 10h
+
+	mov ah,2	      ;resets the cursor position to
+	mov dh,row	       ; row and column specified
+	mov dl,col
+	mov bh,0
+	int 10h
+	ret
+ClrScrn endp
+
+end

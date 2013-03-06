@@ -1,0 +1,19 @@
+import "unknwn.idl";
+
+[
+object,
+uuid(B6CB97C0-BD47-11d3-87A2-444553540000)
+]
+interface IGasReservoir : IUnknown {
+	HRESULT drainGas([in] int grade, [in] double amount);
+}
+
+[
+object,
+uuid(B6CB97C1-BD47-11d3-87A2-444553540000)
+]
+interface IGasFiller : IUnknown {
+	HRESULT getGasLevel([in] int grade, [out] double* pLevel);
+	HRESULT getTankCapacity([in] int grade, [out] double* pCapacity);
+	HRESULT fillTank([in] int grade, [in] double amount);
+}

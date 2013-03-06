@@ -1,0 +1,14 @@
+The pair of values is (2.2, 3)
+Enter a pair of values separated by space:4.4 3.3
+The pair of values is (4.4, 3.3)
+The pair of values is (6.6, 6.3)
+The pair of values is (-2.2, -0.3)
+Value at index 4 is:
+Exception occurred:Invalid index:4
+
+The pair of values is (1, 2)
+The pair of values is (3, 4)
+The pair of values is (4, 6)
+The pair of values is (-2, -2)
+Value at index 4 is:
+Exception occurred:Invalid index:4

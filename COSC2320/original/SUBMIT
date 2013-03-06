@@ -1,0 +1,38 @@
+	Command to submit the files to the graders:
+
+
+	~lmao/public/submit assignment# filename1 filename2 ...
+
+	~jwang2/public/submit assignment# filename1 filename2 ...
+
+	~swang7/public/submit assignment# filename1 filename2 ...
+
+
+Example: To submit you program 1 extension do one of these
+   ~lmao/public/submit 1 polycal.c poly.c stackA.c poly.h stack.h
+   ~jwang2/public/submit 1 polycal.c poly.c stackA.c poly.h stack.h
+   ~swang7/public/submit 1 polycal.c poly.c stackA.c poly.h stack.h
+      
+You must be in the (sub)directory that contains the files you are submitting 
+when you do the above submit commands.
+
+All students with names between A-Ho should submit programs to lmao.
+All students with names between Hoang-Panhwar submit programs to jwang2.
+All students with names between Parekh-Z should submit programs to swang7.
+
+Also be sure that you have already e-mailed your TA your bayou account 
+username. The submit command will not work if you have not done this.
+
+You must also turn in a printout of your C source file(s) and a script 
+file showing a typical run of the program. Do not submit the script file.
+You should hand in these printouts by taking them to your TA during their
+office hours or slipping them under their office doors.
+
+The TA names, offices and office hours are
+  NAME            OFFICE     HOURS      GRADE STUDENTS WITH NAMES
+Ms. Langfang Mao  PGH 518  3-4p.m. TT     A-Ho
+Mr. Jin Wang      PGH 527  3-4p.m. TT     Hoang-Panhwar
+Ms. Suli Wang     PGH 362  1-2p.m. TT     Parekh-Z
+
+Please see them concerning all grading questions. Only see Dr. Anderson 
+concerning a grading question if you cannot resolve it with them.

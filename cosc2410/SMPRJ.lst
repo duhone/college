@@ -1,0 +1,2232 @@
+Microsoft (R) Macro Assembler Version 6.11		    11/20/99 16:26:39
+Add numbers						     Page 1 - 1
+
+
+				     title	Add numbers
+				     comment ~********************************
+				     	Name:Eric Duhon
+				     	SSN: 453-97-8531
+				     	Date:Sep 20,1999
+				     	Purpose:This program calculates the largest fibanacci number
+				     		that will fit in an unsigned 16 bit number. The
+				     		result is stored in dx.
+				     ~	 ********************************
+
+				     	.model	  small
+				     	.386
+				       ;	.stack	 100h
+				          ; this is a "main program" so needs a stack
+				          ;subroutines/functions/"callees" do not need stack
+				       ;	 .dosseg
+				          ;this line and the ".Startup/.Exit lines
+				          ;should be removed for subs,funcs, and "callees"
+				          include dos.inc
+				   C ; DOS Interface Macros - Version 1.3 - for Microsoft Macro Assembler 6.1
+				   C ; (C) Copyright Microsoft Corporation, 1987, 1988, 1989, 1990, 1993
+				   C 
+				   C ; Typedefs for testing pointers
+				   C NPVOID  TYPEDEF NEAR PTR
+				   C FPVOID  TYPEDEF FAR  PTR
+				   C 
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  For more information on the following structures refer to
+				   C ;  the Microsoft MS-DOS Programmer's Reference for Version 5.0
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 003E				   C BOOTSECTOR STRUCT 1t
+ 0000	    0003 [		   C     bsJump          DB 3 DUP(?)
+	     00
+	    ]
+ 0003	    0001 [		   C     bsOemName       DB '????????'
+	     3F 3F 3F 3F 3F 3F
+	     3F 3F
+	    ]
+ 000B  0000			   C     bsBytesPerSec   DW ?
+ 000D  00			   C     bsSecPerClust   DB ?
+ 000E  0000			   C     bsResSectors    DW ?
+ 0010  00			   C     bsFATs          DB ?
+ 0011  0000			   C     bsRootDirEnts   DW ?
+ 0013  0000			   C     bsSectors       DW ?
+ 0015  00			   C     bsMedia         DB ?
+ 0016  0000			   C     bsFATsecs       DW ?
+ 0018  0000			   C     bsSecPerTrack   DW ?
+ 001A  0000			   C     bsHeads         DW ?
+ 001C  00000000			   C     bsHiddenSecs    DD ?
+ 0020  00000000			   C     bsHugeSectors   DD ?
+ 0024  00			   C     bsDriveNumber   DB ?
+ 0025  00			   C     bsReserved1     DB ?
+ 0026  00			   C     bsBootSignature DB ?
+ 0027  00000000			   C     bsVolumeID      DD ?
+ 002B	    000B [		   C     bsVolumeLabel   DB 11 DUP(?)
+	     00
+	    ]
+ 0036	    0008 [		   C     bsFileSysType   DB 8 DUP(?)
+	     00
+	    ]
+				   C BOOTSECTOR ENDS
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Used with: Interrupt 21h Function 440Dh Minor Code 60h
+				   C ;             Interrupt 21h Function 440Dh Minor Code 40h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 0028				   C DEVICEPARAMS STRUCT 1t
+ 0000  00			   C     dpSpecFunc      DB ?
+ 0001  00			   C     dpDevType       DB ?
+ 0002  0000			   C     dpDevAttr       DW ?
+ 0004  0000			   C     dpCylinders     DW ?
+ 0006  00			   C     dpMediaType     DB ?
+ 0007  0000			   C     dpBytesPerSec   DW ?
+ 0009  00			   C     dpSecPerClust   DB ?
+ 000A  0000			   C     dpResSectors    DW ?
+ 000C  00			   C     dpFATs          DB ?
+ 000D  0000			   C     dpRootDirEnts   DW ?
+ 000F  0000			   C     dpSectors       DW ?
+ 0011  00			   C     dpMedia         DB ?
+ 0012  0000			   C     dpFATsecs       DW ?
+ 0014  0000			   C     dpSecPerTrack   DW ?
+ 0016  0000			   C     dpHeads         DW ?
+ 0018  00000000			   C     dpHiddenSecs    DD ?
+ 001C  00000000			   C     dpHugeSectors   DD ?
+ 0020	    0006 [		   C     dpReserved1     DB 6 DUP(?) ;; A documentation error in the
+	     00
+	    ]
+ 0026  0000			   C     dpTrkLayoutCnt  DW ?        ;; MS-DOS Programmer's Reference 5.0
+				   C DEVICEPARAMS ENDS               ;; omits these last two fields.
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Used with: Interrupt 21h Function 11h
+				   C ;             Interrupt 21h Function 12h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 0020				   C DIRENTRY STRUCT 1t
+ 0000	    0001 [		   C     deName          DB '????????'
+	     3F 3F 3F 3F 3F 3F
+	     3F 3F
+	    ]
+ 0008	    0001 [		   C     deExtension     DB '???'
+	     3F 3F 3F
+	    ]
+ 000B  00			   C     deAttributes    DB ?
+ 000C	    000A [		   C     deReserved1     DB 10 DUP(?)
+	     00
+	    ]
+ 0016  0000			   C     deTime          DW ?
+ 0018  0000			   C     deDate          DW ?
+ 001A  0000			   C     deStartCluster  DW ?
+ 001C  00000000			   C     deFileSize      DD ?
+				   C DIRENTRY ENDS
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Used with: Interrupt 25h
+				   C ;             Interrupt 26h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 000A				   C DISKIO STRUCT 1t
+ 0000  00000000			   C     diStartSector   DD ?
+ 0004  0000			   C     diSectors       DW ?
+ 0006  00000000			   C     diBuffer        DD ?
+				   C DISKIO ENDS
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Used with: Interrupt 21h Function 1Fh
+				   C ;             Interrupt 21h Function 32h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 0021				   C DPB STRUCT 1t
+ 0000  00			   C     dpbDrive        DB ?
+ 0001  00			   C     dpbUnit         DB ?
+ 0002  0000			   C     dpbSectorSize   DW ?
+ 0004  00			   C     dpbClusterMask  DB ?
+ 0005  00			   C     dpbClusterShift DB ?
+ 0006  0000			   C     dpbFirstFAT     DW ?
+ 0008  00			   C     dpbFATCount     DB ?
+ 0009  0000			   C     dpbRootEntries  DW ?
+ 000B  0000			   C     dpbFirstSector  DW ?
+ 000D  0000			   C     dpbMaxCluster   DW ?
+ 000F  0000			   C     dpbFATSize      DW ?
+ 0011  0000			   C     dpbDirSector    DW ?
+ 0013  00000000			   C     dpbDriverAddr   DD ?
+ 0017  00			   C     dpbMedia        DB ?
+ 0018  00			   C     dpbFirstAccess  DB ?
+ 0019  00000000			   C     dpbNextDPB      DD ?
+ 001D  0000			   C     dpbNextFree     DW ?
+ 001F  0000			   C     dpbFreeCnt      DW ?
+				   C DPB ENDS
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Used with: Interrupt 21h Function 11h
+				   C ;             Interrupt 21h Function 12h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 002C				   C EXTENDEDFCB STRUCT 1t
+ 0000  FF			   C     extSignature    DB 0FFh
+ 0001	    0005 [		   C     extReserved1    DB 5 DUP(0)
+	     00
+	    ]
+ 0006  00			   C     extAttribute    DB ?
+ 0007  00			   C     extDriveID      DB ?
+ 0008	    0001 [		   C     extFileName     DB '????????'
+	     3F 3F 3F 3F 3F 3F
+	     3F 3F
+	    ]
+ 0010	    0001 [		   C     extExtent       DB '???'
+	     3F 3F 3F
+	    ]
+ 0013  0000			   C     extCurBlockNo   DW ?
+ 0015  0000			   C     extRecSize      DW ?
+ 0017	    0004 [		   C     extFileSize     DB 4 DUP(?)
+	     00
+	    ]
+ 001B  0000			   C     extFileDate     DW ?
+ 001D  0000			   C     extFileTime     DW ?
+ 001F	    0008 [		   C     extReserved2    DB 8 DUP(?)
+	     00
+	    ]
+ 0027  00			   C     extCurRecNo     DB ?
+ 0028	    0004 [		   C     extRandomRecNo  DB 4 DUP(?)
+	     00
+	    ]
+				   C EXTENDEDFCB ENDS
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Used with: Interrupt 21h Function 11h
+				   C ;             Interrupt 21h Function 12h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 0007				   C EXTHEADER STRUCT 1t
+ 0000  FF			   C     ehSignature     DB 0FFh
+ 0001	    0005 [		   C     ehReserved      DB 5 DUP(?)
+	     00
+	    ]
+ 0006  00			   C     ehSearchAttrs   DB ?
+				   C EXTHEADER ENDS
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Used with: Interrupt 21h Function 0Fh
+				   C ;             Interrupt 21h Function 10h
+				   C ;             Interrupt 21h Function 11h
+				   C ;             Interrupt 21h Function 12h
+				   C ;             Interrupt 21h Function 13h
+				   C ;             Interrupt 21h Function 14h
+				   C ;             Interrupt 21h Function 15h
+				   C ;             Interrupt 21h Function 16h
+				   C ;             Interrupt 21h Function 17h
+				   C ;             Interrupt 21h Function 1Bh
+				   C ;             Interrupt 21h Function 1Ch and @ChkDrv MACRO
+				   C ;             Interrupt 21h Function 21h
+				   C ;             Interrupt 21h Function 22h
+				   C ;             Interrupt 21h Function 23h
+				   C ;             Interrupt 21h Function 24h
+				   C ;             Interrupt 21h Function 27h
+				   C ;             Interrupt 21h Function 28h
+				   C ;             Interrupt 21h Function 29h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 0025				   C FCB STRUCT 1t
+ 0000  00			   C     fcbDriveID      DB ?
+ 0001	    0001 [		   C     fcbFileName     DB '????????'
+	     3F 3F 3F 3F 3F 3F
+	     3F 3F
+	    ]
+ 0009	    0001 [		   C     fcbExtent       DB '???'
+	     3F 3F 3F
+	    ]
+ 000C  0000			   C     fcbCurBlockNo   DW ?
+ 000E  0000			   C     fcbRecSize      DW ?
+ 0010	    0004 [		   C     fcbFileSize     DB 4 DUP(?)
+	     00
+	    ]
+ 0014  0000			   C     fcbFileDate     DW ?
+ 0016  0000			   C     fcbFileTime     DW ?
+ 0018	    0008 [		   C     fcbReserved1    DB 8 DUP(?)
+	     00
+	    ]
+ 0020  00			   C     fcbCurRecNo     DB ?
+ 0021	    0004 [		   C     fcbRandomRecNo  DB 4 DUP(?)
+	     00
+	    ]
+				   C FCB ENDS
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Used with: Interrupt 21h Function 4Eh and @GetFirst MACRO
+				   C ;             Interrupt 21h Function 4Fh and @GetNext MACRO
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 002B				   C FILEINFO STRUCT 1t
+ 0000	    0015 [		   C     fiReserved1     DB 21 DUP(?)
+	     00
+	    ]
+ 0015  00			   C     fiAttribute     DB ?
+ 0016  0000			   C     fiFileTime      DW ?
+ 0018  0000			   C     fiFileDate      DW ?
+ 001A  00000000			   C     fiSize          DD ?
+ 001E	    000D [		   C     fiFileName      DB 13 DUP(?)
+	     00
+	    ]
+				   C FILEINFO ENDS
+				   C 
+				   C ; This structure declaration is included for compatability with earlier
+				   C ; versions of DOS.INC.  The structure declaration above, which matches 
+				   C ; the MS-DOS Programmer's Reference 5.0, should be used for new code.
+ 002B				   C FILE_INFO STRUCT
+ 0000	    0015 [		   C   pad           BYTE    21 DUP (?)      ; pad to 43 bytes
+	     00
+	    ]
+ 0015  00			   C   Attrib        BYTE    ?               ; file attribute
+ 0016  0000			   C   Time          WORD    ?               ; file time
+ 0018  0000			   C   Date          WORD    ?               ; file date
+ 001A  00000000			   C   Len           DWORD   ?               ; file size
+ 001E	    000D [		   C   FName         BYTE    13 DUP (?)      ; file name
+	     00
+	    ]
+				   C FILE_INFO ENDS
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Used with: Interrupt 21h Function 440Dh Minor Code 42h
+				   C ;             Interrupt 21h Function 440Dh Minor Code 62h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 0005				   C FVBLOCK STRUCT 1t
+ 0000  00			   C     fvSpecFunc      DB 0
+ 0001  0000			   C     fvHead          DW ?
+ 0003  0000			   C     fvCylinder      DW ?
+				   C FVBLOCK ENDS
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Used with: Interrupt 21h Function 440Dh Minor Code 66h
+				   C ;             Interrupt 21h Function 440Dh Minor Code 46h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 003A				   C MID STRUCT 1t
+ 0000  0000			   C     midInfoLevel    DW 0
+ 0002  00000000			   C     midSerialNum    DD ?
+ 0006	    000B [		   C     midVolLabel     DD 11 DUP(?)
+	     00000000
+	    ]
+ 0032	    0008 [		   C     midFileSysType  DB 8 DUP(?)
+	     00
+	    ]
+				   C MID ENDS
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Used with: Interrupt 21h Function 440Dh Minor Code 41h
+				   C ;             Interrupt 21h Function 440Dh Minor Code 61h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 0010				   C PARTENTRY STRUCT 1t
+ 0000  00			   C     peBootable      DB ?
+ 0001  00			   C     peBeginHead     DB ?
+ 0002  00			   C     peBeginSector   DB ?
+ 0003  00			   C     peBeginCylinder DB ?
+ 0004  00			   C     peFileSystem    DB ?
+ 0005  00			   C     peEndHead       DB ?
+ 0006  00			   C     peEndSector     DB ?
+ 0007  00			   C     peEndCylinder   DB ?
+ 0008  00000000			   C     peStartSector   DD ?
+ 000C  00000000			   C     peSectors       DD ?
+				   C PARTENTRY ENDS
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Used with: Interrupt 21h Function 17h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 0025				   C RENAMEFCB STRUCT 1t
+ 0000  00			   C     renDriveID      DB ?
+ 0001	    0001 [		   C     renOldName      DB '????????'
+	     3F 3F 3F 3F 3F 3F
+	     3F 3F
+	    ]
+ 0009	    0001 [		   C     renOldExtent    DB '???'
+	     3F 3F 3F
+	    ]
+ 000C	    0005 [		   C     renReserved1    DB 5 DUP(?)
+	     00
+	    ]
+ 0011	    0001 [		   C     renNewName      DB '????????'
+	     3F 3F 3F 3F 3F 3F
+	     3F 3F
+	    ]
+ 0019	    0001 [		   C     renNewExtent    DB '???'
+	     3F 3F 3F
+	    ]
+ 001C	    0009 [		   C     renReserved2    DB 9 DUP(?)
+	     00
+	    ]
+				   C RENAMEFCB ENDS
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Used with: Interrupt 21h Function 440Dh Minor Code 61h
+				   C ;             Interrupt 21h Function 440Dh Minor Code 41h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 000D				   C RWBLOCK STRUCT 1t
+ 0000  00			   C     rwSpecFunc      DB 0
+ 0001  0000			   C     rwHead          DW ?
+ 0003  0000			   C     rwCylinder      DW ?
+ 0005  0000			   C     rwFirstSector   DW ?
+ 0007  0000			   C     rwSectors       DW ?
+ 0009  00000000			   C     rwBuffer        DD ?
+				   C RWBLOCK ENDS
+				   C 
+				   C 
+				   C ; Internal
+				   C __LdAdr MACRO reg:REQ, adr:REQ
+				   C     IF (OPATTR (adr)) AND 00010000y
+				   C         mov     reg, adr               ;; Register
+				   C     ELSEIF (OPATTR (adr)) AND 00000100y
+				   C         mov     reg, adr               ;; Constant
+				   C     ELSEIF (TYPE (adr) EQ BYTE)  OR (TYPE (adr) EQ SBYTE)
+				   C         mov    reg, OFFSET adr         ;; Bytes
+				   C     ELSEIF (TYPE (adr) EQ NPVOID) OR (TYPE (adr) EQ WORD)
+				   C         mov    reg, adr                ;; Near pointer
+				   C     ELSEIF (TYPE (adr) EQ FPVOID) OR (TYPE (adr) EQ DWORD)
+				   C         mov    reg, WORD PTR adr[0]    ;; Far pointer
+				   C         mov    ds,  WORD PTR adr[2]
+				   C     ELSE
+				   C         .ERR <Illegal argument>
+				   C     ENDIF
+				   C ENDM
+				   C 
+				   C 
+				   C ; Internal
+				   C __LdSeg MACRO dest:REQ, src:REQ
+				   C     IFIDNI <src>, <es>                 ;; Segment register
+				   C         mov     ax, src
+				   C         mov     dest, ax
+				   C     ELSEIFIDNI <src>, <ss>
+				   C         mov     ax, src
+				   C         mov     dest, ax
+				   C     ELSEIFIDNI <src>, <ds>
+				   C         mov     ax, src
+				   C         mov     dest, ax
+				   C     ELSEIFIDNI <src>, <cs>
+				   C         mov     ax, src
+				   C         mov     dest, ax
+				   C     ELSEIF (OPATTR (src)) AND 00000100y ;; Constant
+				   C         mov     ax, src
+				   C         mov     dest, ax
+				   C     ELSE                                ;; Memory or general register
+				   C         mov     dest, src
+				   C     ENDIF
+				   C ENDM
+				   C 
+				   C ; Internal
+				   C __LdDub MACRO dub:REQ
+				   C     IF ((OPATTR (dub)) AND 00000100y)
+				   C         IF ((dub) LE 0FFFFh)
+				   C              sub  cx, cx
+				   C              mov  dx, dub
+				   C         ELSE
+				   C              sub  cx, HIGWORD dub
+				   C              mov  dx, LOWWORD dub
+				   C         ENDIF
+				   C     ELSEIF   TYPE (dub) EQ 2
+				   C         sub  cx, cx
+				   C         mov  dx, dub
+				   C     ELSEIF TYPE (dub) EQ 4
+				   C         mov  cx, dub[2]
+				   C         mov  dx, dub[0]
+				   C     ELSEIF TYPE (dub) EQ 0
+				   C         sub     cx, cx
+				   C         mov     dx, dub
+				   C     ELSE
+				   C         .ERR
+				   C         ECHO Illegal argument
+				   C     ENDIF
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @GetChar [echo] [,[break] [,clearbuf]]
+				   C ;
+				   C ;  Summary:   Gets a keystroke from the keyboard
+				   C ;
+				   C ;  Arguments: <echo>         Nonzero to echo keystroke; default yes.
+				   C ;                            Must be a constant.
+				   C ;
+				   C ;             <break>        Nonzero to accept CTRL+C; default yes. Must
+				   C ;                            be a constant.
+				   C ;
+				   C ;             <clearbuf>     Nonzero to clear keyboard buffer; default
+				   C ;                            no. Must be a constant.
+				   C ;
+				   C ;             NOTE: Arguments can be omitted to get defaults.
+				   C ;
+				   C ;  Returns:   ASCII code of key in AL
+				   C ;
+				   C ;  Modifies:  AX, else DL used if echo on and CTRL+C off
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 01h, 07h, 08h, 0Ch
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @GetChar MACRO ech:=<1>, cc:=<1>, clear:=<0>
+				   C     LOCAL   funct, disp
+				   C     disp    = 1
+				   C     IF  ech
+				   C         IF  cc
+				   C             funct   = 01h       ;; Echo with break checking
+				   C         ELSE
+				   C             funct   = 07h       ;; Echo without break checking
+				   C             disp    = 02h       ;; Need separate call to echo
+				   C         ENDIF
+				   C     ELSE
+				   C         IF  cc
+				   C             funct   = 08h       ;; No echo with break checking
+				   C         ELSE
+				   C             funct   = 07h       ;; No echo without break checking
+				   C         ENDIF
+				   C     ENDIF
+				   C     IFE clear
+				   C         mov     ah, funct       ;; Load function directly
+				   C     ELSE
+				   C         mov     ah, 0Ch         ; If clear set, call function
+				   C         mov     al, funct       ;;  indirectly with function 0Ch
+				   C     ENDIF
+				   C     int     21h                 ; Call DOS
+				   C     IF disp EQ 02h              ;; Separate call for echo without
+				   C         mov     dl, al          ;  break checking
+				   C         mov     ah, disp
+				   C         int     21h
+				   C     ENDIF
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @GetStr buffer [,[terminator] [,[limit] [,segment]]]
+				   C ;
+				   C ;  Summary:   Gets a string from the keyboard
+				   C ;
+				   C ;  Arguments: <buffer>         Offset of buffer for string. Must be an
+				   C ;                              offset address.
+				   C ;
+				   C ;                              Byte 1    Maximum length of string before
+				   C ;                                        call.
+				   C ;                              Byte 2    Actual length of string after
+				   C ;                                        call.
+				   C ;                              Byte 3+   Bytes of string.
+				   C ;
+				   C ;             <terminator>     Terminating byte: null (0) or $ (24h).
+				   C ;                              May be a constant or register, but not memory.
+				   C ;
+				   C ;             <limit>          Maximum length of string. Must be a
+				   C ;                              constant. If not given as an argument,
+				   C ;                              must be in buffer before call.
+				   C ;
+				   C ;             <segment>        Segment of buffer; DS if not given.
+				   C ;
+				   C ;  Returns:   Pointer to string in SI, length of string in BX
+				   C ;
+				   C ;  Modifies:  AX, DX, BX, SI
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 0Ah
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @GetStr MACRO ofset:REQ, terminator, limit, segmnt
+				   C     __LdAdr dx, <ofset>
+				   C     IFNB    <segmnt>
+				   C         __LdSeg ds, <segmnt>
+				   C     ENDIF
+				   C     mov     ah, 0Ah
+				   C     mov     si, dx
+				   C     IFNB    <limit>
+				   C         mov     BYTE PTR [si], limit
+				   C     ENDIF
+				   C     int     21h
+				   C     inc     si
+				   C     mov     bl, [si]
+				   C     sub     bh, bh
+				   C     inc     si
+				   C     IFNB    <terminator>
+				   C         mov     BYTE PTR [bx+si], terminator
+				   C     ENDIF
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @ShowChar char [,char]...
+				   C ;
+				   C ;  Summary:   Displays one or more characters to screen
+				   C ;
+				   C ;  Argument:  <char>     8-bit ASCII code
+				   C ;
+				   C ;  Returns:   No return value
+				   C ;
+				   C ;  Modifies:  AX, DL
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 02h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @ShowChar MACRO chr:VARARG
+				   C     mov     ah, 02h
+				   C     FOR arg, <chr>
+				   C         IFDIFI  <arg>, <dl>
+				   C             mov     dl, arg
+				   C         ENDIF
+				   C         int     21h
+				   C     ENDM
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @PrtChar char [,char]...
+				   C ;
+				   C ;  Summary:   Prints one or more characters to LPT1
+				   C ;
+				   C ;  Argument:  <char>     8-bit ASCII code
+				   C ;
+				   C ;  Returns:   No return value
+				   C ;
+				   C ;  Modifies:  AX, DL
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 05h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @PrtChar MACRO chr:VARARG
+				   C     mov     ah, 05h
+				   C     FOR arg, <chr>
+				   C         IFDIFI  <arg>, <dl>
+				   C             mov     dl, arg
+				   C         ENDIF
+				   C         int     21h
+				   C     ENDM
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @ShowStr address [,segment]
+				   C ;
+				   C ;  Summary:   Displays a $-terminated string
+				   C ;
+				   C ;  Arguments: <address>     Address of string terminated by "$" (24h).
+				   C ;                           Must be an offset address.
+				   C ;
+				   C ;             <segment>     Segment of address string; DS if not given.
+				   C ;
+				   C ;  Returns:   No return value
+				   C ;
+				   C ;  Modifies:  AX, DX; DS if segment changed
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 09h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @ShowStr MACRO ofset:REQ, segmnt
+				   C     LOCAL  msg, sseg
+				   C     IF @InStr( 1, ofset, <!"> ) EQ 1
+				   C         sseg    TEXTEQU @CurSeg
+				   C         .DATA
+				   C         msg     BYTE    ofset, "$"
+				   C     @CurSeg ENDS
+				   C         sseg    SEGMENT
+				   C         mov     dx, OFFSET msg
+				   C     ELSE
+				   C         __LdAdr dx, ofset
+				   C         IFNB    <segmnt>
+				   C             __LdSeg ds, <segmnt>
+				   C         ENDIF
+				   C     ENDIF
+				   C     mov     ah, 9
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @Read buffer, length [,[handle] [,segment]]
+				   C ;
+				   C ;  Summary:   Reads data from a file or device
+				   C ;
+				   C ;  Arguments: <buffer>      Offset of buffer where data will be stored.
+				   C ;                           Must be an offset address.
+				   C ;
+				   C ;             <length>      Length of data in bytes.
+				   C ;
+				   C ;             <handle>      File or device handle; if none given,
+				   C ;                           keyboard (handle 0) is assumed.
+				   C ;
+				   C ;             <segment>     Segment of address string; DS if not given.
+				   C ;
+				   C ;  Returns:   If carry: clear, bytes read in AX
+				   C ;
+				   C ;  Modifies:  AX, DX, BX, CX; DS if segment changed
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 3Fh
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @Read MACRO ofset:REQ, bytes:REQ, handle:=<0>, segmnt
+				   C     IFDIF   <handle>, <0>
+				   C         mov     bx, handle
+				   C     ELSE
+				   C         sub     bx, bx
+				   C     ENDIF
+				   C     mov     cx, bytes
+				   C     __LdAdr dx, <ofset>
+				   C     IFNB    <segmnt>
+				   C         __LdSeg ds, <segmnt>
+				   C     ENDIF
+				   C     mov     ah, 3Fh
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @Write buffer, length [,[handle] [,segment]]
+				   C ;
+				   C ;  Summary:   Writes data to a file or device
+				   C ;
+				   C ;  Arguments: <buffer>      Offset of buffer where data is stored. Must
+				   C ;                           be an offset address.
+				   C ;
+				   C ;             <length>      Length of data in bytes.
+				   C ;
+				   C ;             <handle>      File or device handle; if none given, screen
+				   C ;                           (handle 1) is assumed.
+				   C ;
+				   C ;             <segment>     Segment of address string; DS if not given.
+				   C ;
+				   C ;  Returns:   If carry: clear, bytes written in AX
+				   C ;
+				   C ;  Modifies:  AX, DX, BX, CX; DS if segment changed
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 40h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @Write MACRO ofset:REQ, bytes:REQ, handle:=<1>, segmnt
+				   C     mov     bx, handle
+				   C     mov     cx, bytes
+				   C     __LdAdr dx, <ofset>
+				   C     IFNB    <segmnt>
+				   C         __LdSeg ds, <segmnt>
+				   C     ENDIF
+				   C     mov     ah, 40h
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @MakeFile path [,[attrib] [,[segment] [,kind]]]
+				   C ;
+				   C ;  Summary:   Creates a file
+				   C ;
+				   C ;  Arguments: <path>        ASCIIZ string of file. Must be an offset
+				   C ;                           address.
+				   C ;
+				   C ;             <attrib>      File attribute; 0 is default if none given.
+				   C ;
+				   C ;             <segment>     Segment of address string; DS if not given.
+				   C ;
+				   C ;             <kind>        If none given, a file is created even if one
+				   C ;                           already exists. Under DOS 3.x, "tmp" can be
+				   C ;                           given to create a unique file or "new" to
+				   C ;                           create a file only if one doesn't already
+				   C ;                           exist.
+				   C ;
+				   C ;  Returns:   If carry: clear, file handle in AX
+				   C ;
+				   C ;  Modifies:  AX, DX, CX; DS if segment changed
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 3Ch, 5Ah, 5Bh
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @MakeFile MACRO path:REQ, atrib:=<0>, segmnt, kind
+				   C     IFDIF   <atrib>, <0>
+				   C         mov     cx, atrib
+				   C     ELSE
+				   C         sub     cx, cx
+				   C     ENDIF
+				   C     __LdAdr dx, <path>
+				   C     IFNB    <segmnt>
+				   C         __LdSeg ds, <segmnt>
+				   C     ENDIF
+				   C     IFIDNI  <kind>, <tmp>
+				   C         mov     ah, 5Ah
+				   C     ELSEIFIDNI <kind>, <new>
+				   C         mov    ah, 5Bh
+				   C     ELSE
+				   C         mov    ah, 3Ch
+				   C     ENDIF
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @OpenFile path, access [,segment]
+				   C ;
+				   C ;  Summary:   Opens a file for input or output
+				   C ;
+				   C ;  Arguments: <path>        ASCIIZ string of file. Must be an offset
+				   C ;                           address.
+				   C ;
+				   C ;             <access>      File access code. Must be a constant. The
+				   C ;                           default value is 0 (normal read/write file).
+				   C ;
+				   C ;             <segment>     Segment of address string; DS if not given.
+				   C ;
+				   C ;  Returns:   If carry: set, error code in AX
+				   C ;             If carry: clear, file handle in AX
+				   C ;
+				   C ;  Modifies:  AX, DX; DS if segment changed
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 3Dh
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @OpenFile MACRO path:REQ, access:=<0>, segmnt
+				   C     __LdAdr dx, <path>
+				   C     IFNB    <segmnt>
+				   C         __LdSeg ds, <segmnt>
+				   C     ENDIF
+				   C     mov     ax, 3D00h + (access AND 0FFh)
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @CloseFile handle
+				   C ;
+				   C ;  Summary:   Closes an open file handle
+				   C ;
+				   C ;  Argument:  <handle>     Previously opened file handle
+				   C ;
+				   C ;  Returns:   If carry: set, error code in AX
+				   C ;
+				   C ;  Modifies:  AX, BX
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 3Eh
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @CloseFile MACRO handle:REQ
+				   C     mov     bx, handle
+				   C     mov     ah, 3Eh
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @DelFile path [,segment]
+				   C ;
+				   C ;  Summary:   Deletes a specified file
+				   C ;
+				   C ;  Arguments: <path>        Offset of ASCIIZ file specification. Must
+				   C ;                           be an offset address.
+				   C ;
+				   C ;             <segment>     Segment of path; DS if none given.
+				   C ;
+				   C ;  Returns:   If carry: set, error code in AX
+				   C ;
+				   C ;  Modifies:  AX, DX; DS if segment changed
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 41h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @DelFile MACRO path:REQ, segmnt
+				   C     __LdAdr dx, <path>
+				   C     IFNB    <segmnt>
+				   C         __LdSeg ds, <segmnt>
+				   C     ENDIF
+				   C     mov     ah, 41h
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @MoveFile old, new [,[segold] [,segnew]]
+				   C ;
+				   C ;  Summary:   Moves or renames a file by changing its path specification
+				   C ;
+				   C ;  Arguments: <old>        Offset of file specification to be renamed.
+				   C ;                          Must be an offset address.
+				   C ;
+				   C ;             <new>        Offset of new file specification. Must be an
+				   C ;                          offset address.
+				   C ;
+				   C ;             <segold>     Segment of old name; DS if none given.
+				   C ;
+				   C ;             <segnew>     Segment of new name; ES if none given.
+				   C ;
+				   C ;  Returns:   If carry: set, error code in AX
+				   C ;
+				   C ;  Modifies:  AX, DX, DI; DS, ES if corresponding segments changed
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 56h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @MoveFile MACRO old:REQ, new:REQ, segold, segnew
+				   C     __LdAdr dx, <old>
+				   C     __LdAdr di, <new>
+				   C     IFNB    <segold>
+				   C         __LdSeg ds, <segold>
+				   C     ENDIF
+				   C     IFNB    <segnew>
+				   C         __LdSeg es, <segnew>
+				   C     ENDIF
+				   C     mov     ah, 56h
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @GetFirst path [,[attribute] [,segment]]
+				   C ;             @GetNext
+				   C ;
+				   C ;  Summary:   Converts file specifications (optionally including wild
+				   C ;             cards) into filenames. These macros are usually used with
+				   C ;             @GetDTA and @SetDTA. Use @SetDTA to set the address where
+				   C ;             the data for each file will be stored.
+				   C ;
+				   C ;  Arguments: <path>          Offset address of fully specified ASCIIZ
+				   C ;                             file name; can have wild cards. Must be an
+				   C ;                             offset address.
+				   C ;
+				   C ;             <attribute>     File attribute to search for; 0 for normal
+				   C ;                             if none given.
+				   C ;
+				   C ;             <segment>       Segment of path; uses DS if none given.
+				   C ;
+				   C ;  Returns:   If carry: set, error code in AX
+				   C ;
+				   C ;  Modifies:  For @GetFirst, AX, CX, DX; DS if segment changed;
+				   C ;             for @GetNext, AX only
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 4Eh
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @GetFirst MACRO path:REQ, atrib, segmnt
+				   C     IFNB    <atrib>
+				   C         mov     cx, atrib
+				   C     ELSE
+				   C         sub     cx, cx
+				   C     ENDIF
+				   C     __LdAdr dx, <path>
+				   C     IFNB    <segmnt>
+				   C         __LdSeg ds, <segmnt>
+				   C     ENDIF
+				   C     mov     ah, 4Eh
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C 
+				   C ; 4Fh
+				   C @GetNext MACRO
+				   C     mov     ah, 4Fh
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @GetDTA
+				   C ;
+				   C ;             @SetDTA buffer [,segment]
+				   C ;
+				   C ;  Summary:   Gets or sets the Disk Transfer Address (DTA). These
+				   C ;             macros are usually used to set the address for file
+				   C ;             information data used by @GetFirst and @GetNext.
+				   C ;
+				   C ;  Arguments: <buffer>      Offset of new DTA buffer. Must be an offset
+				   C ;                           address.
+				   C ;
+				   C ;             <segment>     Segment of new DTA buffer; DS if none given.
+				   C ;
+				   C ;  Returns:   @GetDTA: ES:BX points to DTA
+				   C ;             @SetDTA: No return value
+				   C ;
+				   C ;  Modifies:  AX for both; ES, BX for @GetDTA; DS, DX for @SetDTA
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 2Fh
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @GetDTA MACRO
+				   C     mov     ah, 2Fh
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C ; 1Ah
+				   C @SetDTA MACRO buffer:REQ, segmnt
+				   C     __LdAdr dx, <buffer>
+				   C     IFNB    <segmnt>
+				   C         __LdSeg ds, <segmnt>
+				   C     ENDIF
+				   C     mov     ah, 1Ah
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @GetFileSize handle
+				   C ;
+				   C ;  Summary:   Gets the file size by moving the file pointer to
+				   C ;             end-of-file
+				   C ;
+				   C ;             NOTE: The file pointer is reset to zero. Thus this
+				   C ;                   macro should not be called during operations that move
+				   C ;                   the pointer.
+				   C ;
+				   C ;  Argument:  <handle>     Previously opened file handle.
+				   C ;
+				   C ;  Returns:   If carry: clear, file length in DX:AX
+				   C ;
+				   C ;  Modifies:  AX, BX, CX, DX
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 42h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @GetFileSize MACRO handle:REQ
+				   C     mov     bx, handle
+				   C     sub     cx, cx
+				   C     sub     dx, dx
+				   C     mov     ax, 4202h
+				   C     int     21h
+				   C     push    dx
+				   C     push    ax
+				   C     sub     dx, dx
+				   C     mov     ax, 4200h
+				   C     int     21h
+				   C     pop     ax
+				   C     pop     dx
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @MovePtrAbs handle [,distance]
+				   C ;
+				   C ;             @MovePtrRel handle [,distance]
+				   C ;
+				   C ;  Summary:   Moves the file pointer in an open file. The pointer can be
+				   C ;             moved to an absolute position, or relative to its current
+				   C ;             position.
+				   C ;
+				   C ;  Arguments: <handle>       Previously opened file handle.
+				   C ;
+				   C ;             <distance>     Distance to move pointer (16-bit) constant
+				   C ;                            or a 16- or 32-bit variable; or leave
+				   C ;                            blank and set distance in CX:DX before
+				   C ;                            macro call.
+				   C ;
+				   C ;  Returns:   If carry: clear, file pointer position in DX:AX
+				   C ;
+				   C ;  Modifies:  AX, BX, CX, DX
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 42h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @MovePtrAbs MACRO handle:REQ, distance
+				   C     IFNB    <distance>
+				   C         __LdDub <distance>
+				   C     ENDIF
+				   C     mov     bx, handle
+				   C     mov     ax, 4200h
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C ; 42h
+				   C @MovePtrRel MACRO handle:REQ, distance
+				   C     IFNB    <distance>
+				   C         __LdDub <distance>
+				   C     ENDIF
+				   C     mov     bx, handle
+				   C     mov     ax, 4201h
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @MkDir path [,segment]
+				   C ;
+				   C ;             @RmDir path [,segment]
+				   C ;
+				   C ;             @ChDir path [,segment]
+				   C ;
+				   C ;  Summary:   Creates, deletes, or changes to the specified directory
+				   C ;
+				   C ;  Arguments: <path>        Offset of ASCIIZ string containing
+				   C ;                           directory. Must be offset address.
+				   C ;
+				   C ;             <segment>     Segment of path; DS if none given.
+				   C ;
+				   C ;  Returns:   If carry: set, error code in AX
+				   C ;
+				   C ;  Modifies:  AX, DX; DS if segment changed
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 39h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @MkDir MACRO path:REQ, segmnt
+				   C     __LdAdr dx, <path>
+				   C     IFNB    <segmnt>
+				   C         __LdSeg ds, <segmnt>
+				   C     ENDIF
+				   C     mov     ah, 39h
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C ; 3Ah
+				   C @RmDir MACRO path:REQ, segmnt
+				   C     __LdAdr dx, <path>
+				   C     IFNB    <segmnt>
+				   C         __LdSeg ds, <segmnt>
+				   C     ENDIF
+				   C     mov     ah, 3Ah
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C ; 3Bh
+				   C @ChDir MACRO path:REQ, segmnt
+				   C     __LdAdr dx, <path>
+				   C     IFNB    <segmnt>
+				   C         __LdSeg ds, <segmnt>
+				   C     ENDIF
+				   C     mov     ah, 3Bh
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @GetDir buffer [,[drive] [,segment]]
+				   C ;
+				   C ;  Summary:   Returns the current directory of the specified drive
+				   C ;
+				   C ;  Arguments: <buffer>      Offset of buffer to receive ASCIIZ
+				   C ;                           directory. Must be an offset address.
+				   C ;
+				   C ;             <drive>       8-bit drive number (0 = current, 1 = A,
+				   C ;                           2 = B, ...; 0 if none given).
+				   C ;
+				   C ;             <segment>     Segment of path; DS if none given.
+				   C ;
+				   C ;  Returns:   If carry: set, error code in AX
+				   C ;
+				   C ;  Modifies:  AX, SI, DL; DS if segment changes
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 47h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @GetDir MACRO buffer:REQ, drive, segmnt
+				   C     IFNB    <drive>
+				   C         mov     dl, drive
+				   C     ELSE
+				   C         sub     dl, dl
+				   C     ENDIF
+				   C     __LdAdr si, <buffer>
+				   C     IFNB    <segmnt>
+				   C         __LdSeg ds, <segmnt>
+				   C     ENDIF
+				   C     mov     ah, 47h
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @GetDrv
+				   C ;
+				   C ;             @SetDrv drive
+				   C ;
+				   C ;  Summary:   Gets or sets the current drive
+				   C ;
+				   C ;  Argument:  <drive>     8-bit drive number (0 = A, 1 = B, ...)
+				   C ;
+				   C ;  Returns:   For @GetDrv, drive number in AL (0 = A, 1 = B, ...);
+				   C ;             for @SetDrv, number of drives in AL
+				   C ;
+				   C ;  Modifies:  AX for both; DL for @SetDrv
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 19h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @GetDrv MACRO
+				   C     mov     ah, 19h
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C ; 0Eh
+				   C @SetDrv MACRO drive:REQ
+				   C     mov     dl, drive
+				   C     mov     ah, 0Eh
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @ChkDrv [drive]
+				   C ;
+				   C ;  Summary:   Gets various data about a disk
+				   C ;
+				   C ;  Argument:  <drive>     8-bit drive number (0 = current, A = 1,
+				   C ;                         B = 2, ...); if none given, current assumed
+				   C ;
+				   C ;  Returns:   AX     Sectors per cluster; -1 if drive invalid
+				   C ;             BX     Available clusters
+				   C ;             CX     Bytes per sector
+				   C ;             DX     Clusters per drive
+				   C ;
+				   C ;  Modifies:  AX, BX, CX, DX
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 1Ch
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @ChkDrv MACRO drive
+				   C     IFNB    <drive>
+				   C         mov     dl, drive
+				   C     ELSE
+				   C         sub     dl, dl
+				   C     ENDIF
+				   C     mov     ah, 1Ch
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @Exit [return]
+				   C ;
+				   C ;  Summary:   Exits to DOS with return code
+				   C ;
+				   C ;  Argument:  <return>     8-bit code to return to DOS; if none given,
+				   C ;                          AL is used. If given, must be a constant.
+				   C ;
+				   C ;  Returns:   No return value
+				   C ;
+				   C ;  Modifies:  AX
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 4Ch
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @Exit MACRO return
+				   C     IFB     <return>
+				   C         mov     ah, 4Ch
+				   C     ELSE
+				   C         mov     ax, 4C00h + (return AND 0FFh)
+				   C     ENDIF
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @TSR paragraphs [,return]
+				   C ;
+				   C ;  Summary:   Terminates a program, but leaves it resident in memory
+				   C ;
+				   C ;  Arguments: <paragraphs>     Memory in paragraphs (16 bytes) to
+				   C ;                              allocate for resident program.
+				   C ;             <return>         Code to return to DOS; if none, AL used.
+				   C ;                              Must be a constant.
+				   C ;
+				   C ;  Returns:   No return value
+				   C ;
+				   C ;  Modifies:  AX, DX
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 31h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @TSR MACRO paragraphs:REQ, return
+				   C     mov     dx, paragraphs
+				   C     IFB     <return>
+				   C         mov     ah, 31h
+				   C     ELSE
+				   C         mov     ax, 3100h + (return AND 0FFh)
+				   C     ENDIF
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @FreeBlock [segment]
+				   C ;
+				   C ;  Summary:   Frees a block of memory
+				   C ;
+				   C ;  Argument:  <segment>     Starting address of memory to be freed; if
+				   C ;                           none given, ES address assumed
+				   C ;
+				   C ;  Returns:   If carry: set, error code in AX
+				   C ;
+				   C ;  Modifies:  AX; ES if segment given
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 49h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @FreeBlock MACRO segmnt
+				   C     IFNB    <segmnt>
+				   C         __LdSeg es, <segmnt>
+				   C     ENDIF
+				   C     mov     ah, 49h
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @GetBlock paragraphs [, retry]
+				   C ;
+				   C ;  Summary:   Allocates a block of memory
+				   C ;
+				   C ;  Argument:  <paragraphs>     Paragraphs (16 bytes) of memory wanted
+				   C ;             <retry>          If nonzero, allocate largest block
+				   C ;                              available
+				   C ;
+				   C ;  Returns:   AX     If carry: clear, the segment of the allocated
+				   C ;                    memory. If carry: set, an error code
+				   C ;             BX     Paragraphs actually allocated. If <retry> is not
+				   C ;                    zero, it may be less than requested.
+				   C ;
+				   C ;  Modifies:  AX, BX
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 48h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @GetBlock MACRO graphs:REQ, retry:=<0>
+				   C     LOCAL   tryit
+				   C     mov     bx, graphs
+				   C     tryit:  mov     ah, 48h
+				   C     int     21h
+				   C 
+				   C     IF      retry
+				   C     jc  tryit
+				   C     ENDIF
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @ModBlock paragraphs [,segment]
+				   C ;
+				   C ;  Summary:   Modifies an allocated block of memory
+				   C ;
+				   C ;  Arguments: <paragraphs>     Paragraphs (16 bytes) of memory wanted.
+				   C ;
+				   C ;             <segment>        Starting address of memory to be freed; if
+				   C ;                              none given, ES address assumed.
+				   C ;
+				   C ;  Returns:   If carry is set, the error code is returned in AX;
+				   C ;               otherwise, the ES register contains the segment address of
+				   C ;               allocated memory. If carry is clear, the BX register contains
+				   C ;               the number of paragraphs allocated.
+				   C ;
+				   C ;  Modifies:  AX, BX; ES if segment given
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 4Ah
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @ModBlock MACRO graphs:REQ, segmnt
+				   C     IFNB    <segmnt>
+				   C         __LdSeg es, <segmnt>
+				   C     ENDIF
+				   C     mov     bx, graphs
+				   C     mov     ah, 4Ah
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @GetDate
+				   C ;
+				   C ;  Summary:   Gets the system date
+				   C ;
+				   C ;  Arguments: None
+				   C ;
+				   C ;  Returns:   AL     Day of week (0 = Sunday, 1 = Monday, ...)
+				   C ;             CX     Year (1980-2099)
+				   C ;             DH     Month (1-12)
+				   C ;             DL     Day (1-31)
+				   C ;
+				   C ;  Modifies:  AX, CX, DX
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 2Ah
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @GetDate MACRO
+				   C     mov     ah, 2Ah
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @SetDate month, day, year
+				   C ;
+				   C ;  Summary:   Sets the system date
+				   C ;
+				   C ;  Arguments: <month>     8-bit month (1-12)
+				   C ;
+				   C ;             <day>       8-bit day (1-31)
+				   C ;
+				   C ;             <year>      16-bit year (1980-2099)
+				   C ;
+				   C ;  Returns:   AL     If date was valid 0, else -1
+				   C ;
+				   C ;  Modifies:  AX, CX, DX
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 2Bh
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @SetDate MACRO month:REQ, day:REQ, year:REQ
+				   C     mov     cx, year
+				   C     mov     dh, month
+				   C     mov     dl, day
+				   C     mov     ah, 2Bh
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @GetTime
+				   C ;
+				   C ;  Summary:   Gets the system time
+				   C ;
+				   C ;  Arguments: None
+				   C ;
+				   C ;  Returns:   CH     Hour (0-23)
+				   C ;             CL     Minute (0-59)
+				   C ;             DH     Second (0-59)
+				   C ;             DL     Hundredth (0-99)
+				   C ;
+				   C ;  Modifies:  AX, CX, DX
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 2Ch
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @GetTime MACRO
+				   C     mov     ah, 2Ch
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @SetTime hour,minute,second,hundredth
+				   C ;
+				   C ;  Summary:   Sets the system time
+				   C ;
+				   C ;  Arguments: <hour>          8-bit hours (0-23)
+				   C ;
+				   C ;             <minute>        8-bit minutes (0-59)
+				   C ;
+				   C ;             <second>        8-bit seconds (0-59)
+				   C ;
+				   C ;             <hundredth>     8-bit hundredth of seconds (0-99)
+				   C ;
+				   C ;  Returns:   AL     If time was valid 0, else -1
+				   C ;
+				   C ;  Modifies:  AX, CX, DX
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 2Dh
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @SetTime MACRO hour:REQ, minutes:REQ, seconds:REQ, hundredths:REQ
+				   C     mov     ch, hour
+				   C     mov     cl, minutes
+				   C     mov     dh, seconds
+				   C     mov     dl, hundredths
+				   C     mov     ah, 2Dh
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @GetVer
+				   C ;
+				   C ;  Summary:   Gets the DOS version
+				   C ;
+				   C ;  Arguments: None
+				   C ;
+				   C ;  Returns:   AL        Major version (0 for versions prior to 2.0)
+				   C ;             AH        Minor version
+				   C ;             BH        OEM serial number
+				   C ;             BL:CX     24-bit user number
+				   C ;
+				   C ;  Modifies:  AX, BX, CX
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 30h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @GetVer MACRO
+				   C     mov     ah, 30h
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @GetInt interrupt
+				   C ;
+				   C ;             @SetInt interrupt, vector [,segment]
+				   C ;
+				   C ;  Summary:   Gets or sets the vector for a specified interrupt
+				   C ;             routine
+				   C ;
+				   C ;  Arguments: <interrupt>     8-bit interrupt number. Must be a
+				   C ;                             constant.
+				   C ;
+				   C ;             <vector>        Offset of interrupt routine.
+				   C ;
+				   C ;             <segment>       Segment of routine; if none given, DS
+				   C ;                             assumed for data; segment ignored for
+				   C ;                             code labels.
+				   C ;
+				   C ;  Returns:   For @GetInt, ES:BX points to interrupt routine;
+				   C ;             for @SetInt, no return value
+				   C ;
+				   C ;  Modifies:  AX for both; ES and BX for @GetInt; DS and DX for
+				   C ;             @SetInt
+				   C ;
+				   C ;  Uses:      Interrupt 21h Function 35h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @GetInt MACRO   interrupt:REQ
+				   C     mov     ax, 3500h + (interrupt AND 0FFh)
+				   C     int     21h
+				   C ENDM
+				   C 
+				   C ; 25h
+				   C @SetInt MACRO interrupt:REQ, vector:REQ, segmnt
+				   C     IF  (TYPE (vector) EQ NPVOID) OR (TYPE (vector) EQ FPVOID)
+				   C         mov     dx, OFFSET vector
+				   C         mov     ax, SEG vector
+				   C         mov     ds, ax
+				   C     ELSE
+				   C         __LdAdr dx, <vector>
+				   C         IFNB    <segmnt>
+				   C             __LdSeg ds, <segmnt>
+				   C         ENDIF
+				   C     ENDIF
+				   C     mov     ax, 2500h + (interrupt AND 0FFh)
+				   C     int     21h
+				   C ENDM
+				   C 
+				          include fall1999.inc
+ = -273.15			   C tempOUTERSPACE        EQU         -273.15
+ = 0021				   C ellipseSEMIMAJOR      EQU         33
+ = 0009				   C ellipseSEMIMINOR      EQU         9
+ = 002A				   C x_PIPE_UL             EQU         42
+ = 0008				   C y_PIPE_UL             EQU         8
+ = 0032				   C x_PIPE_LR             EQU         50
+ = 000D				   C y_PIPE_LR             EQU         13
+ = 0000				   C tempTOP               EQU         0
+ = 0064				   C tempBOT               EQU         100
+ =-0041				   C tempLEFT              EQU         -65
+ = 00D4				   C tempRIGHT             EQU         212
+				   C 
+				   C 
+				          include bios.inc
+				   C ; BIOS Interface Macros - Version 1.2 - for Microsoft Macro Assembler 6.1
+				   C ; (C) Copyright Microsoft Corporation, 1987,1988,1989,1990
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @GetMode
+				   C ;
+				   C ;  Summary:   Gets the current video mode and page
+				   C ;
+				   C ;  Arguments: None
+				   C ;
+				   C ;  Returns:   AL     Mode
+				   C ;	      AH     Width in characters
+				   C ;	      BH     Page
+				   C ;
+				   C ;  Modifies:  AX, BH
+				   C ;
+				   C ;  Uses:      Interrupt 10h Function 0Fh
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @GetMode MACRO
+				   C     mov   ah, 0Fh
+				   C     int   10h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @SetMode mode
+				   C ;
+				   C ;  Summary:   Sets the current video mode and page
+				   C ;
+				   C ;  Argument:  <mode>	 8-bit video mode.
+				   C ;
+				   C ;  Returns:   No return value
+				   C ;
+				   C ;  Modifies:  AX
+				   C ;
+				   C ;  Uses:      Interrupt 10h Function 00h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @SetMode MACRO mode
+				   C     mov   al, mode
+				   C     xor   ah, ah
+				   C     int   10h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @SetColor color
+				   C ;
+				   C ;  Summary:   Sets the background color
+				   C ;
+				   C ;  Argument:  <color>	  8-bit background color (0-15); border
+				   C ;			  color in text modes
+				   C ;
+				   C ;  Returns:   No return value
+				   C ;
+				   C ;  Modifies:  AX, BX
+				   C ;
+				   C ;  Uses:      Interrupt 10h Function 0Bh
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @SetColor MACRO color
+				   C     sub   bh, bh
+				   C     mov   bl, color
+				   C     mov   ah, 0Bh
+				   C     int   10h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @SetPalette color
+				   C ;
+				   C ;  Summary:   Sets the color palette
+				   C ;
+				   C ;  Argument:  <color>	  8-bit color palette; 0-1 for modes 5 and 6
+				   C ;
+				   C ;  Returns:   No return value
+				   C ;
+				   C ;  Modifies:  AX, BX
+				   C ;
+				   C ;  Uses:      Interrupt 10h Function 0Bh
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @SetPalette MACRO color
+				   C     mov   bh, 1
+				   C     mov   bl, color
+				   C     mov   ah, 0Bh
+				   C     int   10h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @SetPage page
+				   C ;
+				   C ;  Summary:   Sets the video page
+				   C ;
+				   C ;  Argument:  <page>	 8-bit page number; 0-3 for modes 2 and 3
+				   C ;
+				   C ;  Returns:   No return value
+				   C ;
+				   C ;  Modifies:  AX
+				   C ;
+				   C ;  Uses:      Interrupt 10h Function 05h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @SetPage MACRO pagenum
+				   C     mov   al, pagenum
+				   C     mov   ah, 05h
+				   C     int   10h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @GetCsr [page]
+				   C ;
+				   C ;  Summary:   Gets the cursor position and size
+				   C ;
+				   C ;  Argument:  <page>	 8-bit page with cursor; if none given,
+				   C ;			 0 assumed
+				   C ;
+				   C ;  Returns:   DL     Column
+				   C ;	      DH     Row
+				   C ;	      CL     Starting scan line
+				   C ;	      CH     Ending scan line
+				   C ;
+				   C ;  Modifies:  AX, DX, CX, BH
+				   C ;
+				   C ;  Uses:      Interrupt 10h Function 03h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @GetCsr MACRO pagenum
+				   C     IFNB <pagenum>
+				   C         mov   bh, pagenum
+				   C     ELSE
+				   C         xor   bh, bh
+				   C     ENDIF
+				   C     mov   ah, 03h
+				   C     int   10h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @SetCsrPos [column] [,[row] [,page]]
+				   C ;
+				   C ;  Summary:   Sets the cursor position
+				   C ;
+				   C ;  Arguments: <column>	   8-bit column; if none given, DL used.
+				   C ;
+				   C ;	      <row>	   8-bit row; if none given, DH used.
+				   C ;
+				   C ;	      <page>	   8-bit page with cursor; if none given,
+				   C ;			   0 assumed.
+				   C ;
+				   C ;  Returns:   No return value
+				   C ;
+				   C ;  Modifies:  AX, DX, BH
+				   C ;
+				   C ;  Uses:      Interrupt 10h Function 02h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @SetCsrPos MACRO column, row, pagenum
+				   C     IFNB <column>
+				   C         mov   dl, column
+				   C     ENDIF
+				   C     IFNB <row>
+				   C         mov   dh, row
+				   C     ENDIF
+				   C     IFNB <pagenum>
+				   C         mov   bh, pagenum
+				   C     ELSE
+				   C         xor   bh, bh
+				   C     ENDIF
+				   C     mov   ah, 02h
+				   C     int   10h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @SetCsrSize startline, endline
+				   C ;
+				   C ;  Summary:   Sets the cursor size and shape by specifying active scan
+				   C ;	      lines. For color adapters, the lines are 0-7. For the
+				   C ;	      monochrome adapter, the lines are 0-13.
+				   C ;
+				   C ;  Arguments: <startline>     8-bit starting scan line (default CGA = 6;
+				   C ;			      MA = 12)
+				   C ;
+				   C ;	      <endline>       8-bit ending scan line (default CGA = 7;
+				   C ;			      MA = 13)
+				   C ;
+				   C ;  Returns:   No return value
+				   C ;
+				   C ;  Modifies:  AX, CX
+				   C ;
+				   C ;  Uses:      Interrupt 10h Function 01h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @SetCsrSize MACRO first, last
+				   C     mov   ch, first
+				   C     mov   cl, last
+				   C     mov   ah, 01h
+				   C     int   10h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @GetCharAtr [page]
+				   C ;
+				   C ;  Summary:   Gets the character and attribute at the cursor location
+				   C ;
+				   C ;  Argument:  <page>	 8-bit page to check; if none given, 0 assumed
+				   C ;
+				   C ;  Returns:   AH     Attribute
+				   C ;	      AL     ASCII character
+				   C ;
+				   C ;  Modifies:  AX, BH
+				   C ;
+				   C ;  Uses:      Interrupt 10h Function 08h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @GetCharAtr MACRO pagenum
+				   C     IFNB <pagenum>
+				   C         mov   bh, pagenum
+				   C     ELSE
+				   C         sub   bh, bh
+				   C     ENDIF
+				   C     mov   ah, 08h
+				   C     int   10h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @PutCharAtr [character] [,[attrib] [,[page] [,count]]]
+				   C ;
+				   C ;	      @PutChar [character] [,[page] [,count]]
+				   C ;
+				   C ;  Summary:   Puts one or more characters and attributes at the current
+				   C ;	      cursor position. For @PutChar, the current attribute is
+				   C ;	      used in text modes and any specified attribute is ignored.
+				   C ;
+				   C ;  Arguments: <character>     8-bit ASCII character to put; if none
+				   C ;			      given, AL used.
+				   C ;
+				   C ;	      <attrib>	      8-bit attribute to put; if none given,
+				   C ;			      BL used.
+				   C ;
+				   C ;	      <page>	      8-bit page to put on; if none given, 0
+				   C ;			      assumed.
+				   C ;
+				   C ;	      <count>	      Number to put; if none given, 1 assumed.
+				   C ;
+				   C ;  Returns:   No return value
+				   C ;
+				   C ;  Modifies:  AX, BX, CX
+				   C ;
+				   C ;  Uses:      Interrupt 10h Function 09h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @PutCharAtr MACRO chr, atrib, pagenum, loops
+				   C     IFNB <chr>
+				   C         mov   al, chr
+				   C     ENDIF
+				   C     IFNB    <atrib>
+				   C         mov   bl, atrib
+				   C     ENDIF
+				   C     IFNB <pagenum>
+				   C         mov   bh, pagenum
+				   C     ELSE
+				   C         xor   bh, bh
+				   C     ENDIF
+				   C     IFNB <loops>
+				   C         mov   cx, loops
+				   C     ELSE
+				   C         mov   cx, 1
+				   C     ENDIF
+				   C     mov   ah, 09h
+				   C     int   10h
+				   C ENDM
+				   C 
+				   C ; 0Ah
+				   C @PutChar MACRO chr, atrib, pagenum, loops
+				   C     IFNB <chr>
+				   C         mov   al, chr
+				   C     ENDIF
+				   C     IFNB    <atrib>
+				   C         mov   bl, atrib
+				   C     ENDIF
+				   C     IFNB <pagenum>
+				   C         mov   bh, pagenum
+				   C     ELSE
+				   C         xor   bh, bh
+				   C     ENDIF
+				   C     IFNB <loops>
+				   C         mov   cx, loops
+				   C     ELSE
+				   C         mov   cx, 1
+				   C     ENDIF
+				   C     mov   ah, 0Ah
+				   C     int   10h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @Scroll dist [,[attr][,[upcol [,[uprow [,[dncol][,dnrow]]]]]]]
+				   C ;
+				   C ;  Summary:   Scrolls a specified window up or down
+				   C ;
+				   C ;  Arguments: <dist>	  8-bit number of lines to scroll; positive
+				   C ;			  scrolls down; negative scrolls up; 0 clears.
+				   C ;
+				   C ;	      <attr>	  8-bit attribute for blank lines; if none
+				   C ;			  given, 07h (white on black).
+				   C ;
+				   C ;	      <upcol>	  Upper left column; if none given, CL used.
+				   C ;
+				   C ;	      <uprow>	  Upper left row; if none given, CH used.
+				   C ;
+				   C ;	      <dncol>	  Lower right column; if none given, DL used.
+				   C ;
+				   C ;	      <dnrow>	  Lower right row; if none given, DH used.
+				   C ;
+				   C ;  Returns:   No return value
+				   C ;
+				   C ;  Modifies:  AX, CX, DX, BH
+				   C ;
+				   C ;  Uses:      Interrupt 10h Function 06h and 07h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @Scroll MACRO distance:REQ, atrib:=<07h>, upcol, uprow, dncol, dnrow
+				   C     IFNB <upcol>
+				   C         mov   cl, upcol
+				   C     ENDIF
+				   C     IFNB <uprow>
+				   C         mov   ch, uprow
+				   C     ENDIF
+				   C     IFNB <dncol>
+				   C         mov   dl, dncol
+				   C     ENDIF
+				   C     IFNB <dnrow>
+				   C         mov   dh, dnrow
+				   C     ENDIF
+				   C     mov   bh, atrib
+				   C     IF distance LE 0
+				   C         mov   ax, 0600h + (-(distance) AND 0FFh)
+				   C     ELSE
+				   C         mov   ax, 0700h + (distance AND 0FFh)
+				   C     ENDIF
+				   C     int   10h
+				   C ENDM
+				   C 
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C ;
+				   C ;  Syntax:    @Cls [page]
+				   C ;
+				   C ;  Summary:   Clears the screen
+				   C ;
+				   C ;  Argument:  <page>	 Video page (8-bit); if none given, 0 assumed
+				   C ;
+				   C ;  Returns:   No return value
+				   C ;
+				   C ;  Modifies:  AX, BX, CX, DX
+				   C ;
+				   C ;  Uses:      Interrupt 10h Function 08h, 06h, and 02h
+				   C ;
+				   C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				   C @Cls MACRO pagenum
+				   C     IFNB <pagenum>
+				   C         IFDIFI <pagenum>, <bh>
+				   C             mov   bh, pagenum
+				   C         ENDIF
+				   C     ELSE
+				   C         sub   bh, bh
+				   C     ENDIF
+				   C     mov   ah, 08h
+				   C     int   10h
+				   C     mov   bh, ah
+				   C     sub   cx, cx
+				   C     mov   dx, 324Fh
+				   C     mov   ax, 0600h
+				   C     int   10h
+				   C     mov   bh, bl
+				   C     sub   dx, dx
+				   C     mov   ah, 02h
+				   C     int   10h
+				   C ENDM
+				   C 
+ 0000				          .data
+				     	;temp dw 0
+ 0000				          .code
+
+ 0000				     PlzWait proc near c mills:sword
+ 0000   2   55			*	 push	bp
+ 0001   2   8B EC		*	 mov	bp, sp
+ 0003   4   8B 46 04		     	mov ax,mills	      ;put argument in ax
+				     	.if(ax > 2000)	      ;insure ax  is not
+ 0006   2   3D 07D0		*	 cmp	ax, 007D0h
+ 0009 7m,3  76 03		*	 jbe	@C0001
+ 000B   2   B8 07D0		     	 mov ax,2000	       ;larger than 2000
+				     	.endif
+ 000E				*@C0001:
+ 000E   2   BB 03E8		     	mov bx,1000	      ;turn milliseconds into
+ 0011   9+  F7 E3		     	mul bx		       ;microseconds
+ 0013   2   8B CA		     	mov cx,dx
+ 0015   2   8B D0		     	mov dx,ax
+ 0017   2   B4 86		     	mov ah,86h	      ;wait cx:dx microseconds
+ 0019  37   CD 15		     	int 15h
+				     	ret
+ 001B   4   5D			*	 pop	bp
+ 001C  10m  C3			*	 ret	00000h
+ 001D				     PlzWait endp
+
+ 001D				     ClrScrn proc near c col:byte , row:byte
+
+ 001D   2   55			*	 push	bp
+ 001E   2   8B EC		*	 mov	bp, sp
+ 0020   2   B4 06		     	mov ah,6	      ;clear the screen
+ 0022   2   B0 00		     	mov al,0	       ;using scrolling up
+ 0024   2   B5 00		     	mov ch,0
+ 0026   2   B1 00		     	mov cl,0
+ 0028   2   B6 18		     	mov dh,24
+ 002A   2   B2 4F		     	mov dl,79
+ 002C   2   B7 07		     	mov bh,7
+ 002E  37   CD 10		     	int 10h
+
+ 0030   2   B4 02		     	mov ah,2	      ;resets the cursor position to
+ 0032   4   8A 76 06		     	mov dh,row	       ; row and column specified
+ 0035   4   8A 56 04		     	mov dl,col
+ 0038   2   B7 00		     	mov bh,0
+ 003A  37   CD 10		     	int 10h
+				     	ret
+ 003C   4   5D			*	 pop	bp
+ 003D  10m  C3			*	 ret	00000h
+ 003E				     ClrScrn endp
+
+				     end
+Microsoft (R) Macro Assembler Version 6.11		    11/20/99 16:26:39
+Add numbers						     Symbols 2 - 1
+
+
+
+
+Macros:
+
+                N a m e                 Type
+
+@ChDir . . . . . . . . . . . . . . . .	Proc
+@ChkDrv  . . . . . . . . . . . . . . .	Proc
+@CloseFile . . . . . . . . . . . . . .	Proc
+@Cls . . . . . . . . . . . . . . . . .	Proc
+@DelFile . . . . . . . . . . . . . . .	Proc
+@Exit  . . . . . . . . . . . . . . . .	Proc
+@FreeBlock . . . . . . . . . . . . . .	Proc
+@GetBlock  . . . . . . . . . . . . . .	Proc
+@GetCharAtr  . . . . . . . . . . . . .	Proc
+@GetChar . . . . . . . . . . . . . . .	Proc
+@GetCsr  . . . . . . . . . . . . . . .	Proc
+@GetDTA  . . . . . . . . . . . . . . .	Proc
+@GetDate . . . . . . . . . . . . . . .	Proc
+@GetDir  . . . . . . . . . . . . . . .	Proc
+@GetDrv  . . . . . . . . . . . . . . .	Proc
+@GetFileSize . . . . . . . . . . . . .	Proc
+@GetFirst  . . . . . . . . . . . . . .	Proc
+@GetInt  . . . . . . . . . . . . . . .	Proc
+@GetMode . . . . . . . . . . . . . . .	Proc
+@GetNext . . . . . . . . . . . . . . .	Proc
+@GetStr  . . . . . . . . . . . . . . .	Proc
+@GetTime . . . . . . . . . . . . . . .	Proc
+@GetVer  . . . . . . . . . . . . . . .	Proc
+@MakeFile  . . . . . . . . . . . . . .	Proc
+@MkDir . . . . . . . . . . . . . . . .	Proc
+@ModBlock  . . . . . . . . . . . . . .	Proc
+@MoveFile  . . . . . . . . . . . . . .	Proc
+@MovePtrAbs  . . . . . . . . . . . . .	Proc
+@MovePtrRel  . . . . . . . . . . . . .	Proc
+@OpenFile  . . . . . . . . . . . . . .	Proc
+@PrtChar . . . . . . . . . . . . . . .	Proc
+@PutCharAtr  . . . . . . . . . . . . .	Proc
+@PutChar . . . . . . . . . . . . . . .	Proc
+@Read  . . . . . . . . . . . . . . . .	Proc
+@RmDir . . . . . . . . . . . . . . . .	Proc
+@Scroll  . . . . . . . . . . . . . . .	Proc
+@SetColor  . . . . . . . . . . . . . .	Proc
+@SetCsrPos . . . . . . . . . . . . . .	Proc
+@SetCsrSize  . . . . . . . . . . . . .	Proc
+@SetDTA  . . . . . . . . . . . . . . .	Proc
+@SetDate . . . . . . . . . . . . . . .	Proc
+@SetDrv  . . . . . . . . . . . . . . .	Proc
+@SetInt  . . . . . . . . . . . . . . .	Proc
+@SetMode . . . . . . . . . . . . . . .	Proc
+@SetPage . . . . . . . . . . . . . . .	Proc
+@SetPalette  . . . . . . . . . . . . .	Proc
+@SetTime . . . . . . . . . . . . . . .	Proc
+@ShowChar  . . . . . . . . . . . . . .	Proc
+@ShowStr . . . . . . . . . . . . . . .	Proc
+@TSR . . . . . . . . . . . . . . . . .	Proc
+@Write . . . . . . . . . . . . . . . .	Proc
+__LdAdr  . . . . . . . . . . . . . . .	Proc
+__LdDub  . . . . . . . . . . . . . . .	Proc
+__LdSeg  . . . . . . . . . . . . . . .	Proc
+
+
+Structures and Unions:
+
+                N a m e                  Size
+                                         Offset      Type
+
+BOOTSECTOR . . . . . . . . . . . . . .	 003E
+  bsJump . . . . . . . . . . . . . . .	 0000	     Byte
+  bsOemName  . . . . . . . . . . . . .	 0003	     Byte
+  bsBytesPerSec  . . . . . . . . . . .	 000B	     Word
+  bsSecPerClust  . . . . . . . . . . .	 000D	     Byte
+  bsResSectors . . . . . . . . . . . .	 000E	     Word
+  bsFATs . . . . . . . . . . . . . . .	 0010	     Byte
+  bsRootDirEnts  . . . . . . . . . . .	 0011	     Word
+  bsSectors  . . . . . . . . . . . . .	 0013	     Word
+  bsMedia  . . . . . . . . . . . . . .	 0015	     Byte
+  bsFATsecs  . . . . . . . . . . . . .	 0016	     Word
+  bsSecPerTrack  . . . . . . . . . . .	 0018	     Word
+  bsHeads  . . . . . . . . . . . . . .	 001A	     Word
+  bsHiddenSecs . . . . . . . . . . . .	 001C	     DWord
+  bsHugeSectors  . . . . . . . . . . .	 0020	     DWord
+  bsDriveNumber  . . . . . . . . . . .	 0024	     Byte
+  bsReserved1  . . . . . . . . . . . .	 0025	     Byte
+  bsBootSignature  . . . . . . . . . .	 0026	     Byte
+  bsVolumeID . . . . . . . . . . . . .	 0027	     DWord
+  bsVolumeLabel  . . . . . . . . . . .	 002B	     Byte
+  bsFileSysType  . . . . . . . . . . .	 0036	     Byte
+DEVICEPARAMS . . . . . . . . . . . . .	 0028
+  dpSpecFunc . . . . . . . . . . . . .	 0000	     Byte
+  dpDevType  . . . . . . . . . . . . .	 0001	     Byte
+  dpDevAttr  . . . . . . . . . . . . .	 0002	     Word
+  dpCylinders  . . . . . . . . . . . .	 0004	     Word
+  dpMediaType  . . . . . . . . . . . .	 0006	     Byte
+  dpBytesPerSec  . . . . . . . . . . .	 0007	     Word
+  dpSecPerClust  . . . . . . . . . . .	 0009	     Byte
+  dpResSectors . . . . . . . . . . . .	 000A	     Word
+  dpFATs . . . . . . . . . . . . . . .	 000C	     Byte
+  dpRootDirEnts  . . . . . . . . . . .	 000D	     Word
+  dpSectors  . . . . . . . . . . . . .	 000F	     Word
+  dpMedia  . . . . . . . . . . . . . .	 0011	     Byte
+  dpFATsecs  . . . . . . . . . . . . .	 0012	     Word
+  dpSecPerTrack  . . . . . . . . . . .	 0014	     Word
+  dpHeads  . . . . . . . . . . . . . .	 0016	     Word
+  dpHiddenSecs . . . . . . . . . . . .	 0018	     DWord
+  dpHugeSectors  . . . . . . . . . . .	 001C	     DWord
+  dpReserved1  . . . . . . . . . . . .	 0020	     Byte
+  dpTrkLayoutCnt . . . . . . . . . . .	 0026	     Word
+DIRENTRY . . . . . . . . . . . . . . .	 0020
+  deName . . . . . . . . . . . . . . .	 0000	     Byte
+  deExtension  . . . . . . . . . . . .	 0008	     Byte
+  deAttributes . . . . . . . . . . . .	 000B	     Byte
+  deReserved1  . . . . . . . . . . . .	 000C	     Byte
+  deTime . . . . . . . . . . . . . . .	 0016	     Word
+  deDate . . . . . . . . . . . . . . .	 0018	     Word
+  deStartCluster . . . . . . . . . . .	 001A	     Word
+  deFileSize . . . . . . . . . . . . .	 001C	     DWord
+DISKIO . . . . . . . . . . . . . . . .	 000A
+  diStartSector  . . . . . . . . . . .	 0000	     DWord
+  diSectors  . . . . . . . . . . . . .	 0004	     Word
+  diBuffer . . . . . . . . . . . . . .	 0006	     DWord
+DPB  . . . . . . . . . . . . . . . . .	 0021
+  dpbDrive . . . . . . . . . . . . . .	 0000	     Byte
+  dpbUnit  . . . . . . . . . . . . . .	 0001	     Byte
+  dpbSectorSize  . . . . . . . . . . .	 0002	     Word
+  dpbClusterMask . . . . . . . . . . .	 0004	     Byte
+  dpbClusterShift  . . . . . . . . . .	 0005	     Byte
+  dpbFirstFAT  . . . . . . . . . . . .	 0006	     Word
+  dpbFATCount  . . . . . . . . . . . .	 0008	     Byte
+  dpbRootEntries . . . . . . . . . . .	 0009	     Word
+  dpbFirstSector . . . . . . . . . . .	 000B	     Word
+  dpbMaxCluster  . . . . . . . . . . .	 000D	     Word
+  dpbFATSize . . . . . . . . . . . . .	 000F	     Word
+  dpbDirSector . . . . . . . . . . . .	 0011	     Word
+  dpbDriverAddr  . . . . . . . . . . .	 0013	     DWord
+  dpbMedia . . . . . . . . . . . . . .	 0017	     Byte
+  dpbFirstAccess . . . . . . . . . . .	 0018	     Byte
+  dpbNextDPB . . . . . . . . . . . . .	 0019	     DWord
+  dpbNextFree  . . . . . . . . . . . .	 001D	     Word
+  dpbFreeCnt . . . . . . . . . . . . .	 001F	     Word
+EXTENDEDFCB  . . . . . . . . . . . . .	 002C
+  extSignature . . . . . . . . . . . .	 0000	     Byte
+  extReserved1 . . . . . . . . . . . .	 0001	     Byte
+  extAttribute . . . . . . . . . . . .	 0006	     Byte
+  extDriveID . . . . . . . . . . . . .	 0007	     Byte
+  extFileName  . . . . . . . . . . . .	 0008	     Byte
+  extExtent  . . . . . . . . . . . . .	 0010	     Byte
+  extCurBlockNo  . . . . . . . . . . .	 0013	     Word
+  extRecSize . . . . . . . . . . . . .	 0015	     Word
+  extFileSize  . . . . . . . . . . . .	 0017	     Byte
+  extFileDate  . . . . . . . . . . . .	 001B	     Word
+  extFileTime  . . . . . . . . . . . .	 001D	     Word
+  extReserved2 . . . . . . . . . . . .	 001F	     Byte
+  extCurRecNo  . . . . . . . . . . . .	 0027	     Byte
+  extRandomRecNo . . . . . . . . . . .	 0028	     Byte
+EXTHEADER  . . . . . . . . . . . . . .	 0007
+  ehSignature  . . . . . . . . . . . .	 0000	     Byte
+  ehReserved . . . . . . . . . . . . .	 0001	     Byte
+  ehSearchAttrs  . . . . . . . . . . .	 0006	     Byte
+FCB  . . . . . . . . . . . . . . . . .	 0025
+  fcbDriveID . . . . . . . . . . . . .	 0000	     Byte
+  fcbFileName  . . . . . . . . . . . .	 0001	     Byte
+  fcbExtent  . . . . . . . . . . . . .	 0009	     Byte
+  fcbCurBlockNo  . . . . . . . . . . .	 000C	     Word
+  fcbRecSize . . . . . . . . . . . . .	 000E	     Word
+  fcbFileSize  . . . . . . . . . . . .	 0010	     Byte
+  fcbFileDate  . . . . . . . . . . . .	 0014	     Word
+  fcbFileTime  . . . . . . . . . . . .	 0016	     Word
+  fcbReserved1 . . . . . . . . . . . .	 0018	     Byte
+  fcbCurRecNo  . . . . . . . . . . . .	 0020	     Byte
+  fcbRandomRecNo . . . . . . . . . . .	 0021	     Byte
+FILEINFO . . . . . . . . . . . . . . .	 002B
+  fiReserved1  . . . . . . . . . . . .	 0000	     Byte
+  fiAttribute  . . . . . . . . . . . .	 0015	     Byte
+  fiFileTime . . . . . . . . . . . . .	 0016	     Word
+  fiFileDate . . . . . . . . . . . . .	 0018	     Word
+  fiSize . . . . . . . . . . . . . . .	 001A	     DWord
+  fiFileName . . . . . . . . . . . . .	 001E	     Byte
+FILE_INFO  . . . . . . . . . . . . . .	 002B
+  pad  . . . . . . . . . . . . . . . .	 0000	     Byte
+  Attrib . . . . . . . . . . . . . . .	 0015	     Byte
+  Time . . . . . . . . . . . . . . . .	 0016	     Word
+  Date . . . . . . . . . . . . . . . .	 0018	     Word
+  Len  . . . . . . . . . . . . . . . .	 001A	     DWord
+  FName  . . . . . . . . . . . . . . .	 001E	     Byte
+FVBLOCK  . . . . . . . . . . . . . . .	 0005
+  fvSpecFunc . . . . . . . . . . . . .	 0000	     Byte
+  fvHead . . . . . . . . . . . . . . .	 0001	     Word
+  fvCylinder . . . . . . . . . . . . .	 0003	     Word
+MID  . . . . . . . . . . . . . . . . .	 003A
+  midInfoLevel . . . . . . . . . . . .	 0000	     Word
+  midSerialNum . . . . . . . . . . . .	 0002	     DWord
+  midVolLabel  . . . . . . . . . . . .	 0006	     DWord
+  midFileSysType . . . . . . . . . . .	 0032	     Byte
+PARTENTRY  . . . . . . . . . . . . . .	 0010
+  peBootable . . . . . . . . . . . . .	 0000	     Byte
+  peBeginHead  . . . . . . . . . . . .	 0001	     Byte
+  peBeginSector  . . . . . . . . . . .	 0002	     Byte
+  peBeginCylinder  . . . . . . . . . .	 0003	     Byte
+  peFileSystem . . . . . . . . . . . .	 0004	     Byte
+  peEndHead  . . . . . . . . . . . . .	 0005	     Byte
+  peEndSector  . . . . . . . . . . . .	 0006	     Byte
+  peEndCylinder  . . . . . . . . . . .	 0007	     Byte
+  peStartSector  . . . . . . . . . . .	 0008	     DWord
+  peSectors  . . . . . . . . . . . . .	 000C	     DWord
+RENAMEFCB  . . . . . . . . . . . . . .	 0025
+  renDriveID . . . . . . . . . . . . .	 0000	     Byte
+  renOldName . . . . . . . . . . . . .	 0001	     Byte
+  renOldExtent . . . . . . . . . . . .	 0009	     Byte
+  renReserved1 . . . . . . . . . . . .	 000C	     Byte
+  renNewName . . . . . . . . . . . . .	 0011	     Byte
+  renNewExtent . . . . . . . . . . . .	 0019	     Byte
+  renReserved2 . . . . . . . . . . . .	 001C	     Byte
+RWBLOCK  . . . . . . . . . . . . . . .	 000D
+  rwSpecFunc . . . . . . . . . . . . .	 0000	     Byte
+  rwHead . . . . . . . . . . . . . . .	 0001	     Word
+  rwCylinder . . . . . . . . . . . . .	 0003	     Word
+  rwFirstSector  . . . . . . . . . . .	 0005	     Word
+  rwSectors  . . . . . . . . . . . . .	 0007	     Word
+  rwBuffer . . . . . . . . . . . . . .	 0009	     DWord
+
+
+Types:
+
+                N a m e                  Size     Attr
+
+FPVOID . . . . . . . . . . . . . . . .	 0004	  FarPTR 
+NPVOID . . . . . . . . . . . . . . . .	 0002	  PTR 
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+DGROUP . . . . . . . . . . . . . . . .	GROUP
+_DATA  . . . . . . . . . . . . . . . .	16 Bit	 0000	  Word	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . . . . .	16 Bit	 003E	  Word	  Public  'CODE'	
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+ClrScrn  . . . . . . . . . . . . . . .	P Near	 001D	  _TEXT	Length= 0021 Public C
+  col  . . . . . . . . . . . . . . . .	Byte	 bp + 0004
+  row  . . . . . . . . . . . . . . . .	Byte	 bp + 0006
+PlzWait  . . . . . . . . . . . . . . .	P Near	 0000	  _TEXT	Length= 001D Public C
+  mills  . . . . . . . . . . . . . . .	Word	 bp + 0004
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+@CodeSize  . . . . . . . . . . . . . .	Number	 0000h	 
+@DataSize  . . . . . . . . . . . . . .	Number	 0000h	 
+@Interface . . . . . . . . . . . . . .	Number	 0000h	 
+@Model . . . . . . . . . . . . . . . .	Number	 0002h	 
+@code  . . . . . . . . . . . . . . . .	Text   	 _TEXT
+@data  . . . . . . . . . . . . . . . .	Text   	 DGROUP
+@fardata?  . . . . . . . . . . . . . .	Text   	 FAR_BSS
+@fardata . . . . . . . . . . . . . . .	Text   	 FAR_DATA
+@stack . . . . . . . . . . . . . . . .	Text   	 DGROUP
+ellipseSEMIMAJOR . . . . . . . . . . .	Number	 0021h	 
+ellipseSEMIMINOR . . . . . . . . . . .	Number	 0009h	 
+tempBOT  . . . . . . . . . . . . . . .	Number	 0064h	 
+tempLEFT . . . . . . . . . . . . . . .	Number	 -0041h	  
+tempOUTERSPACE . . . . . . . . . . . .	Text   	 -273.15
+tempRIGHT  . . . . . . . . . . . . . .	Number	 00D4h	 
+tempTOP  . . . . . . . . . . . . . . .	Number	 0000h	 
+x_PIPE_LR  . . . . . . . . . . . . . .	Number	 0032h	 
+x_PIPE_UL  . . . . . . . . . . . . . .	Number	 002Ah	 
+y_PIPE_LR  . . . . . . . . . . . . . .	Number	 000Dh	 
+y_PIPE_UL  . . . . . . . . . . . . . .	Number	 0008h	 
+
+	   0 Warnings
+	   0 Errors

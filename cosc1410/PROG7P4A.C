@@ -1,0 +1,30 @@
+/***************************************************************
+	 Name:Eric Duhon		  Assignment #7 part4 A
+	 SS#: 453-97-8531		  Filename: prog7t4a.c
+	 COSC 1410			  Due Date: 6 APR 99
+	 Section: 07007			  Turned in: 6 APR 99
+****************************************************************/
+/*program outputs the address of several variables*/
+#include<stdio.h>
+#include<math.h>
+#include<limits.h>
+#include<float.h>
+
+void main()
+{
+ int i = 1,a[5] = {10,20,30,40,50};
+ int* p;
+ clrscr();
+ printf("The address of i is %p",&i);
+ printf("\nThe address of a is %p",a);
+ printf("\nThe address of a[1] is %p",(a+1));
+ printf("\nThe address of a[2] is %p",(a+2));
+
+
+ /*exit code*/
+ printf("\n\nPress any key to exit program.");
+ while(!kbhit())
+  {
+  }
+
+}

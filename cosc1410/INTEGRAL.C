@@ -1,0 +1,73 @@
+/***************************************************************
+	 Name:Eric Duhon		    Assignment #5
+	 SS#: 453-97-8531		    Filename: integral.c
+	 COSC 1410			    Due Date: 11 MAR 99
+	 Section: 07007			    Turned in: 11 MAR 99
+****************************************************************/
+/*program computes the value of pi using integral rectangle approximation
+  on a half circle and then doubling it*/
+
+#include<stdio.h>
+#include<math.h>
+
+double circle(double);
+
+double integrate(double(*f)(double),double a,double b,long int n);
+
+void main()
+{
+ long numbrect;
+ double pi;
+ /*clear screen and print heading*/
+ clrscr();
+ pi = 0.0;
+ printf("\nNumber of Approximating     Integral Approximation");
+ printf("\n     Rectangles                      of Pi");
+ /*calculate pi using diffrent number af approximating rectangles*/
+ for(numbrect = 2;numbrect <= 65536;numbrect *= 2)
+  {
+	 pi = 2 * integrate(circle,-1,1,numbrect);
+	 printf("\n%11ld                    %.14f",numbrect,pi);
+  }
+
+ /*exit code*/
+ printf("\n\nPress any key to exit program.");
+ while(!kbhit())
+  {
+  }
+}
+
+double circle(double x)
+ {
+  /*return y value of a circle at x*/
+  double y;
+  y = sqrt(1.0 - (x*x));
+  return y;
+ }
+
+
+double integrate(double(*f)(double),double a,double b,long int n)
+ {
+  /*estimate definate integral from a to b using midpoint rectangle
+	 approximation*/
+  double area,width,speed;
+  long int count;
+  /*find width of rectangles*/
+  width = (b-a)/n;
+  /*set speed to x value of first rectangle*/
+  speed = a + (width /2.0);
+  /*set area to y value of first rectangle*/
+  area = f(speed);
+  for(count=1;count<n;count++)
+	{
+	 /*increase speed to x value of next rectangle*/
+	 speed += width;
+	 /*add y value of current rectangle to area*/
+	 area += f(speed);
+	}
+
+  /*multiply total y values of all rectangles by width to find the total
+	 area of all rectangles*/
+  area *= width;
+  return area;
+ }

@@ -1,0 +1,31 @@
+#include <stdio.h>
+#include "d:\cosc2320\poly.h"
+
+int main()
+{  Poly p1, p2, p3;  float x, pvalue;
+   p1 = ReadPoly();   /*input poly   5.0X^10 - 2.0X^4 + 7.0*/
+   p2 = ReadPoly();   /*input poly  -7.5X^10 + 2.0X^4 + 7.0*/
+   p3 = AddPoly(p1, p2);
+   printf("p1 = "); PrintPoly(p1);
+   printf("\np2 = "); PrintPoly(p2);
+   printf("\np1 + p2 = "); PrintPoly(p3);
+   DeletePoly(p3);
+   p3 = SubPoly(p1, p2);
+   printf("\np1 - p2 = "); PrintPoly(p3);
+   DeletePoly(p3);
+   p3 = MulPoly(p1, p2);
+   printf("\np1 * p2 = "); PrintPoly(p3);
+   DeletePoly(p3);
+   p3 = DifPoly(p1);
+   printf("\nDerivative of p1 = "); PrintPoly(p3);
+   DeletePoly(p3);
+   p3 = ReadPoly();   /*input zero polynomial*/
+   printf("\nZero polynomial = "); PrintPoly(p3); printf("\n");
+   return 0;
+}
+
+
+ 
+
+
+

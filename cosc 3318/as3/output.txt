@@ -1,0 +1,33 @@
+Working with Counter
+1
+2
+3
+4
+3
+2
+1
+0
+-1
+Working with ModCounter
+1
+0
+1
+0
+1
+0
+1
+0
+1
+Working with ModCounter
+1
+2
+0
+1
+0
+2
+1
+0
+2
+Different
+Same
+Exception thrown

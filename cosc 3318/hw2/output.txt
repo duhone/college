@@ -1,0 +1,14 @@
+Counter Value is 0
+Incrementing - Counter Value is 1
+Incrementing - Counter Value is 2
+Incrementing - Counter Value is 0
+Decrementing - Counter Value is 2
+Number of Counters while in main: 1
+Number of Counters while in inner scope: 2
+Number of Counters while in main: 1
+Counter Value is 2
+Number of Counters while in printCounterValueAndCount_1: 2
+Number of Counters while in main: 1
+Counter Value is 2
+Number of Counters while in printCounterValueAndCount_2: 1
+Number of Counters while in main: 1

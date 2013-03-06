@@ -1,0 +1,163 @@
+Microsoft (R) Macro Assembler Version 6.11		    11/12/99 21:53:37
+addbcd							     Page 1 - 1
+
+
+				     title	addbcd
+				     comment ~********************************
+				     	Name:Eric Duhon
+				     	SSN: 453-97-8531
+				     	Date:Oct 25,1999
+				     	Purpose:This c callable function inputs 2 numeric strings and
+				     		adds them together. the result is a string returned in ans
+				     ~	 ********************************
+				     	.model	  small,c
+				            .586
+				     printf proto near c, arg1:ptr byte,:vararg
+
+ 0000				          .data
+ 0000				            upup tbyte 123456789123456789h
+	    00123456789123456789
+ 000A				            updn tbyte 123456789987654321h
+	    00123456789987654321
+ 0014				            dnup tbyte 987654321123456789h
+	    00987654321123456789
+ 001E				            dndn tbyte 987654321987654321h
+	    00987654321987654321
+ 0028 0000000000000000		            ans1 real8 ?
+ 0030 0000			            filler1 word ?
+ 0032 0000000000000000		            ans2 real8 ?
+ 003A 0000			            filler2 word ?
+ 003C 0000000000000000		            ans3 real8 ?
+ 0044 0000			            filler3 word ?
+ 0046 0000000000000000		            ans4 real8 ?
+ 004E 0000			            filler4 word ?
+ 0050 0A 25 2E 30 66 00		            msg byte 0ah,"%.0f",0h
+
+
+ 0000				          .code
+ 0000				     FPU_BAdd proc near c
+ 0000   5   60			          pusha
+				         ; mov di,offset ans1
+
+ 0001   1   BE 0000 R		          mov si,offset upup
+				         ; mov bp,4
+				         ; mov cx,4
+
+ 0004				     outer:
+ 0004  48+  DF 24		          fbld tbyte ptr [si]
+				          ;fldz
+				          ;fbld tbyte ptr [si]
+				          ;xor cx,cx
+				          ;and cx,00001001b
+				          ;push cx
+ 0006   1   B9 0009		          mov cx,9
+ 0009				     inner:
+ 0009  48+  DF 24		          fbld tbyte ptr [si]
+ 000B   1   DE C1		          fadd
+ 000D  5,6  E2 FA		          loop inner
+
+ 000F   2   DD 5C 28		          fstp real8 ptr [si+028h]
+				          invoke printf, offset msg,real8 ptr [si+028h]
+ 0012   2   66| FF 74 2C	*	 push	dword  ptr [+si]+00000002Ch
+ 0016   2   66| FF 74 28	*	 push	dword  ptr [+si]+000000028h
+ 001A   1   68 0050 R		*	 push	word  ptr OFFSET msg
+ 001D   1   E8 0000 E		*	 call	printf
+ 0020   1   83 C4 0A		*	 add	sp, 0000Ah
+				         ; ffree st
+ 0023   1   83 C6 0A		          add si,10
+				        ;  add di,10
+				       ;   dec bp
+ 0026   1   81 FE 0028 R	          cmp si,offset ans1
+				         ; pop cx
+ 002A   1   75 D8		     	jnz outer
+				         ; loop outer
+ 002C   5   61			          popa
+ 002D   1   B8 0031		          mov ax,Last-FPU_BAdd			;done so return with no error
+ 0030   2   C3			          ret
+ 0031				     FPU_BAdd	endp
+
+ 0031				     Last:
+
+ 0031				     ClrScrn proc c col:byte , row:byte
+
+ 0031   1   55			*	 push	bp
+ 0032   1   8B EC		*	 mov	bp, sp
+ 0034   1   B4 06		     	mov ah,6	      ;clear the screen
+ 0036   1   B0 00		     	mov al,0	       ;using scrolling up
+ 0038   1   B5 00		     	mov ch,0
+ 003A   1   B1 00		     	mov cl,0
+ 003C   1   B6 18		     	mov dh,24
+ 003E   1   B2 4F		     	mov dl,79
+ 0040   1   B7 07		     	mov bh,7
+ 0042  16   CD 10		     	int 10h
+
+ 0044   1   B4 02		     	mov ah,2	      ;resets the cursor position to
+ 0046   1   8A 76 06		     	mov dh,row	       ; row and column specified
+ 0049   1   8A 56 04		     	mov dl,col
+ 004C   1   B7 00		     	mov bh,0
+ 004E  16   CD 10		     	int 10h
+				     	ret
+ 0050   3   C9			*	 leave	
+ 0051   2   C3			*	 ret	00000h
+ 0052				     ClrScrn endp
+
+
+				     end
+Microsoft (R) Macro Assembler Version 6.11		    11/12/99 21:53:37
+addbcd							     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+DGROUP . . . . . . . . . . . . . . . .	GROUP
+_DATA  . . . . . . . . . . . . . . . .	16 Bit	 0056	  Word	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . . . . .	16 Bit	 0052	  Word	  Public  'CODE'	
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+ClrScrn  . . . . . . . . . . . . . . .	P Near	 0031	  _TEXT	Length= 0021 Public C
+  col  . . . . . . . . . . . . . . . .	Byte	 bp + 0004
+  row  . . . . . . . . . . . . . . . .	Byte	 bp + 0006
+FPU_BAdd . . . . . . . . . . . . . . .	P Near	 0000	  _TEXT	Length= 0031 Public C
+  outer  . . . . . . . . . . . . . . .	L Near	 0004	  _TEXT	
+  inner  . . . . . . . . . . . . . . .	L Near	 0009	  _TEXT	
+printf . . . . . . . . . . . . . . . .	P Near	 0000	  Length= 0000 External C
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+@CodeSize  . . . . . . . . . . . . . .	Number	 0000h	 
+@DataSize  . . . . . . . . . . . . . .	Number	 0000h	 
+@Interface . . . . . . . . . . . . . .	Number	 0001h	 
+@Model . . . . . . . . . . . . . . . .	Number	 0002h	 
+@code  . . . . . . . . . . . . . . . .	Text   	 _TEXT
+@data  . . . . . . . . . . . . . . . .	Text   	 DGROUP
+@fardata?  . . . . . . . . . . . . . .	Text   	 FAR_BSS
+@fardata . . . . . . . . . . . . . . .	Text   	 FAR_DATA
+@stack . . . . . . . . . . . . . . . .	Text   	 DGROUP
+Last . . . . . . . . . . . . . . . . .	L Near	 0031	  _TEXT	
+ans1 . . . . . . . . . . . . . . . . .	QWord	 0028	  _DATA	
+ans2 . . . . . . . . . . . . . . . . .	QWord	 0032	  _DATA	
+ans3 . . . . . . . . . . . . . . . . .	QWord	 003C	  _DATA	
+ans4 . . . . . . . . . . . . . . . . .	QWord	 0046	  _DATA	
+dndn . . . . . . . . . . . . . . . . .	TWord	 001E	  _DATA	
+dnup . . . . . . . . . . . . . . . . .	TWord	 0014	  _DATA	
+filler1  . . . . . . . . . . . . . . .	Word	 0030	  _DATA	
+filler2  . . . . . . . . . . . . . . .	Word	 003A	  _DATA	
+filler3  . . . . . . . . . . . . . . .	Word	 0044	  _DATA	
+filler4  . . . . . . . . . . . . . . .	Word	 004E	  _DATA	
+msg  . . . . . . . . . . . . . . . . .	Byte	 0050	  _DATA	
+updn . . . . . . . . . . . . . . . . .	TWord	 000A	  _DATA	
+upup . . . . . . . . . . . . . . . . .	TWord	 0000	  _DATA	
+
+	   0 Warnings
+	   0 Errors

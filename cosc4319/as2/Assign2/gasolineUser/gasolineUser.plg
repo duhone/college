@@ -1,0 +1,36 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: gasolineUser - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\venkat\LOCALS~1\Temp\RSP5F0.tmp" with contents
+[
+/nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /Fp"Debug/gasolineUser.pch" /Yu"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\Venkat\UofH\f014319\Assign2\gasolineUser\gasolineUserDlg.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\venkat\LOCALS~1\Temp\RSP5F0.tmp" 
+Creating temporary file "C:\DOCUME~1\venkat\LOCALS~1\Temp\RSP5F1.tmp" with contents
+[
+/nologo /subsystem:windows /incremental:yes /pdb:"Debug/gasolineUser.pdb" /debug /machine:I386 /out:"Debug/gasolineUser.exe" /pdbtype:sept 
+.\Debug\gasolineUser.obj
+.\Debug\gasolineUserDlg.obj
+.\Debug\StdAfx.obj
+.\Debug\gasolineUser.res
+.\Debug\gasolineInterfaces_i.obj
+]
+Creating command line "link.exe @C:\DOCUME~1\venkat\LOCALS~1\Temp\RSP5F1.tmp"
+<h3>Output Window</h3>
+Compiling...
+gasolineUserDlg.cpp
+Linking...
+
+
+
+<h3>Results</h3>
+gasolineUser.exe - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

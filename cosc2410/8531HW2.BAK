@@ -1,0 +1,32 @@
+title	Add numbers
+comment ~********************************
+	Name:Eric Duhon
+	SSN: 453-97-8531
+	Date:Sep 8,1999
+	Purpose:This program adds the series of numbers 1,4,7,10,...,301
+		and stores the result in Ax
+~        ********************************
+
+	.model	  small
+
+	.stack	 100h
+     ; this is a "main program" so needs a stack
+     ;subroutines/functions/"callees" do not need stack
+        .dosseg
+     ;this line and the ".Startup/.Exit lines
+     ;should be removed for subs,funcs, and "callees"
+
+     .code
+main proc
+        .Startup             ;needed for "main"
+	mov ax,1
+	mov dx,1
+	mov cx,100
+begin:
+	add dx,3
+	add ax,dx
+	loop begin
+
+        .Exit                ;return back to the OS
+Main   endp
+       end

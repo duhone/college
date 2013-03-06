@@ -1,0 +1,131 @@
+/***************************************************************
+	 Name:Eric Duhon		   Assignment #6 modified
+	 SS#: 453-97-8531		   Filename: scoresm.c
+	 COSC 1410			   Due Date: 30 MAR 99
+	 Section: 07007			   Turned in: 30 MAR 99
+****************************************************************/
+/*program inputs a answer key and then inputs scores of several students
+  stored in a file. The program then grades the scores and then sorts
+  them in descending order and finally outputs the results.*/
+#include<stdio.h>
+#include<math.h>
+
+void printresults(int [],int [], float, int, int, int);
+
+void inputarray(int [],int);
+
+int scoretest(int [],int [],int n);
+
+void computestats(int [],int n,float*,int*,int*);
+
+void sortscores(int [],int [],int);
+
+void main()
+{
+ int key[20];
+ int id[50];
+ int scores[50];
+ int ans[20];
+ float avg;
+ int nq,ns,oid,high,low;
+ clrscr();
+ ns = 0;
+ /*input number of questions on test*/
+ scanf("%d",&nq);
+ /*input answer key*/
+ inputarray(key,nq);
+ while(scanf("%d",&oid) != EOF)
+  {
+	/*input individual students scores*/
+	inputarray(ans,nq);
+	/*store id number aquired earlier in scanf in id[]*/
+	id[ns] = oid;
+	/*score individual students test*/
+	scores[ns] = scoretest(key,ans,nq);
+	ns++;
+
+  }
+ /*calculate average score,high score, and low score for entire class*/
+ computestats(scores,ns,&avg,&high,&low);
+ /*sort class scores in descending order*/
+ sortscores(scores,id,ns);
+ /*output results to screen*/
+ printresults(id,scores,avg,high,low,ns);
+}
+
+void printresults(int id[],int scores[], float avg,int high,int low,int n)
+ {
+  /*outputs id, scores,class high grade,class low grade and class average
+	 to screen*/
+  int a;
+  printf("SCORE  ID");
+  for(a=0;a<n;a++)
+	{
+	 printf("\n%3d    %2d",scores[a],id[a]);
+	}
+  printf("\nLOW=%d HIGH=%d AVG=%.2f",low,high,avg);
+
+ }
+
+void inputarray(int a[],int n)
+ {
+  /*inputs an array and stores it in a[]*/
+  int count;
+  for(count=0;count<n;count++)
+	{
+	 scanf("%d",&a[count]);
+	}
+ }
+
+int scoretest(int key[],int ans[],int n)
+ {
+  /*scores test stored in ans[] according to correct
+	 answers stored in key[]*/
+  int a,score;
+  score = 0;
+  for(a=0;a<n;a++)
+	{
+	 if(key[a] == ans[a]) score++;
+	}
+	return score;
+ }
+
+void computestats(int score[],int n,float* avg,int* high,int* low)
+ {
+  /*calculates average of all values in score[], and computes the highest
+	 and lowest value in score[]*/
+  int a;
+  *avg = 0;
+  *high = score[0];
+  *low = score[0];
+  for(a=0;a<n;a++)
+	{
+
+	 *avg += score[a];
+	 if(score[a] > *high) *high = score[a];
+	 if(score[a] < *low)  *low = score[a];
+	}
+  *avg /= n;
+ }
+
+void sortscores(int score[],int id[],int n)
+ {
+  /*sort values in score[] and id[] in descending order
+	 according to the values in score[]*/
+  int a,b,temp;
+  for(b=0;b<n-1;b++)
+	for(a=0;a<n-1-b;a++)
+	 {
+	  /*reverses id and score if they are out of order*/
+	  if(score[a] < score[a+1])
+		{
+		 temp = score[a];
+		 score[a] = score[a+1];
+		 score[a+1] = temp;
+		 temp = id[a];
+		 id[a] = id[a+1];
+		 id[a+1] = temp;
+		}
+	 }
+
+ }

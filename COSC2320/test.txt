@@ -1,0 +1,23 @@
+
+Enter the name of the file to analyze error.h
+char               2
+define             1
+endif              1
+error              3
+fatalerror         1
+h                  2
+ifndef             1
+msg                2
+void               2
+At each prompt enter a word or # to quit.
+Enter a word: hello 
+This word does not occur in the file
+Enter a word: error 
+    1    2    4
+Enter a word: define 
+    2
+Enter a word: #
+The size of the tree is 9
+The height of the tree is 3
+The height of a perfectly balanced tree would be 3
+The ratio between the actual height to the ideal height is 1.000000

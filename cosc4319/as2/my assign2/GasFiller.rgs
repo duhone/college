@@ -1,0 +1,26 @@
+HKCR
+{
+	Assign2.GasFiller.1 = s 'GasFiller Class'
+	{
+		CLSID = s '{C2BF3D02-DE1B-41EC-AB8B-3A21E4BC4697}'
+	}
+	Assign2.GasFiller = s 'GasFiller Class'
+	{
+		CLSID = s '{C2BF3D02-DE1B-41EC-AB8B-3A21E4BC4697}'
+		CurVer = s 'Assign2.GasFiller.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {C2BF3D02-DE1B-41EC-AB8B-3A21E4BC4697} = s 'GasFiller Class'
+		{
+			ProgID = s 'Assign2.GasFiller.1'
+			VersionIndependentProgID = s 'Assign2.GasFiller'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{917B1F42-DA08-45F1-9FD3-7FF1F3574C6C}'
+		}
+	}
+}

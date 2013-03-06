@@ -1,0 +1,162 @@
+COSC2320                                 Program 3
+
+    Write a program that extracts words from a file (a word is the  
+same as in program 2) and keeps track of how many times each word  
+occurs. After inputting all the words in the file sort the words in  
+descending order of their frequency and output the words and their  
+frequency. The output might look like the following:
+WORD                FREQUENCY
+the                    27
+a                      22
+...
+disrespectful           1
+dumb                    1
+...
+The most frequent operation in this program is looking-up a word in a  
+table of words to see if it has already been encountered and if it  
+has to increment its associated count. If it has not been encountered  
+then the word should be inserted in the table with an initial count  
+of 1. To make these operations very efficient implement the table as  
+a hash table with chaining. After extracting all the words from the  
+file and inserting them in the table along with their associated  
+frequency counts, prepare for the output by traversing all the lists  
+and putting pointers to all the nodes in the lists into an array of  
+pointers which has been dynamically allocated to be of size ht->num.  
+Then use quick sort adapted to sort this data (which will be left  
+where it is in the nodes) into descending order of the count fields.  
+This will be done by interchanging the pointers in the array rather  
+than interchanging data values. Write a comparison function, 
+
+int cmp(PtrToNode p, PtrToNode q). This comparison funtion should  
+compare based on the frequency count fields of the nodes pointed to  
+by p, q first. If the frequency count of the 2 are equal then compare  
+based on the word fields using strcmp. The value of cmp should be <  
+0, 0, > 0 if the data in the node pointed to by p is less than,  
+equal, greater than the data in the node pointed to by q. Using this  
+function it is easy to adapt quick sort to sort the array of pointers  
+instead of the usual array of data values. Use cmp wherever a  
+comarison between 2 elements is required during the sorting  
+algorithm. cmp is used for comparing data values and when an  
+interchange is needed it is just 2 pointers in the array that are  
+interchanged, not the data values. The cmp function will guarantee  
+that words of greater frequency sort before words of lower frequency  
+and that words of equal frequency (for example disrespectful and  
+dumb) will be sorted in alphabetical order. Finally you will need a  
+function that can go through the sorted array of pointers and output  
+the word and count fields of each node pointed to by a pointer in the  
+array.
+    Use the following declarations and operations in your program.  
+You do not have to divide this program up into separate files. This  
+will make debugging and certain other aspects of the program easier.  
+This code is in the file hash.c and you can copy it from my cosc2320  
+directory.
+
+typedef struct Node *PtrToNode;
+struct Node { char *word; int count; PtrToNode next; };
+typedef struct HTInfo *HT;
+struct HTInfo { long int arraySize; long int num/*number of words in  
+table*/; PtrToNode *array; };
+
+/*************************************************************************************************
+The function NewHT creates a new empty hash table of given size and  returns it.  
+*************************************************************************************************/
+HT NewHT(long int size)
+{  long int i; HT ht = malloc(sizeof(struct HTInfo));
+   if (ht == NULL) FatalError("Out of storage!!! Cannot create new hash table");
+   ht->arraySize = NextPrime(size);
+   ht->array = malloc(ht->arraySize * sizeof(PtrToNode));
+   if (ht->array == NULL) FatalError("Out of storage!!! Cannot create hash table array");
+   for (i = 0; i < ht->arraySize; i++)
+      ht->array[i] = NULL;
+   ht->num = 0;
+   return ht;
+}
+
+/*************************************************************************************************
+The function FindHT finds the node containing w and returns a pointer  to it or NULL if not found.  
+*************************************************************************************************/
+PtrToNode FindHT(char *w, HT ht)
+
+/*************************************************************************************************
+The function InsertHT inserts a node containing w and count 0 in the front of the correct list. 
+If (ht->num > 2*ht->arraySize) then it re-hashes by allocating an array of size the next largest
+prime as determined by NextPrime and  re-inserting each node into the correct list for the larger
+array and freeing the old array. This function assumes that FindHT has already determined that w 
+is not in the hash table.  
+*************************************************************************************************/
+void InsertHT(char *w, HT ht)
+
+/*************************************************************************************************
+The function NextPrime returns the smallest prime number greater than or equal to n form the 
+following list of primes: 31, 61, 127, 251, 509, 1021, 2039, 4093, 8191, 16381, 32749, 65521, 
+131071, 262139,  524287, 1048573. These are the largest primes less than 2**n for 5 <= n <= 20.
+*************************************************************************************************/
+long int NextPrime(long int n)
+
+/*************************************************************************************************
+The function hash computes an integer between 0 and tableSize - 1. It does this by adding 
+together all the integer character codes in s, left shifting each sum by 2 bits so that the order
+of characters matters, and then getting the remainder when divided by arraySize.  
+s[0] is added in last to assure that the last and first character codes are not left shifted out
+of the sum since these characters are often the most important in distinguishing 2 similar 
+strings.
+*************************************************************************************************/
+long int hash(char s[], long int arraySize)
+{  int i; unsigned long int sum = 0;
+   if (s[0] == '\0') return 0;
+   for (i = 1; s[i] != '\0'; i++)
+      sum = (sum + s[i]) << 2;
+   sum = sum + s[0];
+   return sum % arraySize;
+}
+/*************************************************************************************************
+The function QuickSort sorts the pointers in the array so that they point to nodes in the order 
+of descending counts. For nodes with counts that are equal the nodes are in descending 
+alphabetical order of the words. The function works by calling on Qsort which is recursive.
+*************************************************************************************************/
+void QuickSort(PtrToNode a[ ], int n)
+{ Qsort(a, 0, n-1);
+}
+    We also want to use this program to test hashing and quick sort.  
+Keep track of the total number of hash table searches done (both  
+succesful and unsuccesful), i.e. the total number of times FindHT is  
+called and the total number of probes during these searches(number of  
+nodes examined + 1 for the spot in the array we look at to find the  
+pointer to the beginning of the list for each search). At the end  
+output total-num-probes / total-num-searches. This will tell us how  
+efficient these searches are, i.e. how well hashing does as a search  
+method. Try this where ht = NewHT(500); and the file has 300-500  
+words. Then try it with the same file and ht = NewHT(20); which will  
+result in several re-hashings. Also during the sorting phase keep  
+track of the number of times table elements are compared (to the  
+pivot) and output this number and the number N*logN where N is the  
+number of elements in the table. Ideally quick sort should have an  
+execution time (number of comparisons) of O(N*logN). 
+
+    Program 2 and program 3 both have search as one of the most  
+frequent operations. Hash tables and binary search trees both provide  
+efficient search (O(1) for hash tables nad O(logN) for binary search  
+trees). Both are sometimes grouped together as "symbol table  
+methods". This name is used because the symbol table constructed by a  
+compiler to keep track of the identifiers used in a program and their  
+types is a typical and important use of such methods. If only insert  
+and find operations are of interest (no sorting, etc.) then hash  
+tables are the most efficint technique. If the data also need to be  
+sorted (outputted) in order of the keys then binary search trees  
+provide this with no additional cost which is why a binary search  
+tree was used in program 2. In program 3 the data needed to be sorted  
+also, but not on the key field and thus this sorting would have to be  
+done afterwards regardless of whether a hash table or a binary search  
+tree is used. Since search is more efficient using a hash table it  
+was chosen for program 3. 
+
+    Note that you can complete most of this program before we discuss  
+quick sort. You could even output the words and counts in the hash  
+table by writing a function that goes through the table and outputs  
+the word and associated count of each node in each of the lists of  
+the table. This would allow you to test your program and make sure it  
+is working correctly before implementing quick sort. If you also  
+outputted the array index pointing to list containing the word (same  
+as hash value of word) then you could see how the hash function  
+scattered words throughout the hash table. Hash tables are sometimes  
+called scatter tables.

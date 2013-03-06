@@ -1,0 +1,26 @@
+HKCR
+{
+	GasolineReservoirComp.GasolineReservoir.1 = s 'GasReservoir Class'
+	{
+		CLSID = s '{8628F9C5-2B0C-400F-BE78-5B1482E7736D}'
+	}
+	GasolineReservoirComp.GasolineReservoir = s 'GasReservoir Class'
+	{
+		CLSID = s '{8628F9C5-2B0C-400F-BE78-5B1482E7736D}'
+		CurVer = s 'GasolineReservoirComp.GasolineReservoir.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {8628F9C5-2B0C-400F-BE78-5B1482E7736D} = s 'GasReservoir Class'
+		{
+			ProgID = s 'GasolineReservoirComp.GasolineReservoir.1'
+			VersionIndependentProgID = s 'GasolineReservoirComp.GasolineReservoir'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{917B1F42-DA08-45F1-9FD3-7FF1F3574C6C}'
+		}
+	}
+}

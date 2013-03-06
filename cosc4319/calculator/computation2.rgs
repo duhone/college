@@ -1,0 +1,26 @@
+HKCR
+{
+	Comp2.computation2.1 = s 'computation2 Class'
+	{
+		CLSID = s '{03A6F446-ADE0-4315-8F16-CF28C865F3ED}'
+	}
+	Comp2.computation2 = s 'computation2 Class'
+	{
+		CLSID = s '{03A6F446-ADE0-4315-8F16-CF28C865F3ED}'
+		CurVer = s 'Comp2.computation2.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {03A6F446-ADE0-4315-8F16-CF28C865F3ED} = s 'computation2 Class'
+		{
+			ProgID = s 'Comp2.computation2.1'
+			VersionIndependentProgID = s 'Comp2.computation2'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{84BF7034-9D35-43BD-9B19-95D74548C2F4}'
+		}
+	}
+}

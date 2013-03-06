@@ -1,0 +1,34 @@
+                              Home Work #04
+                              Specifications
+
+
+
+HW04 is to create a 2-dimensional array of bytes, initialize it properly,
+and then add all the elements of either a particular row or a particular
+column (which, and  which one, will be announced at a later date).
+
+Initialization:   Element [0,0] will be set to zero. The step to add to
+each element, in row major order, to get the value for the next element
+will be announced later. Initialization at run time will cost 10 points;
+it will therefore be better to initialize the array at assembly time.
+(Note that overflow/carry is ignored in the initialization)
+
+The number of rows and the number of columns will announced later.
+
+The addition of the bytes will be into a 16 bit sum (i.e. propagate the
+carrys). The answer will be a 16 bit answer. Write the answer, in Hex,
+on the code print out sheet that is turned into your TA.
+
+The announcement to be made later will be posted to the list server
+at 4 PM next Sunday.
+
+
+
+
+Example EQUs that you'll be needing
+nRow                   EQU              10
+nCol                   EQU              13
+STEP                   EQU              42
+ByRow                  EQU              1
+ByCol                  EQU              1 - ByRow
+

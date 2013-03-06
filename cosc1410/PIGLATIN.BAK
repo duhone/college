@@ -1,0 +1,163 @@
+/***************************************************************
+	 Name:Eric Duhon		    Assignment #8
+	 SS#: 453-97-8531		    Filename: piglatin.c
+	 COSC 1410			    Due Date: 15 APR 99
+	 Section: 07007			    Turned in: 15 APR 99
+****************************************************************/
+/*program translates english into standard pig latin*/
+#include<stdio.h>
+#include<ctype.h>
+#include<string.h>
+
+void translateline(char*,char*);
+
+int isvowel(char);
+
+int posvowel(char *);
+
+void extract(char**,char*);
+
+void translateword(char*,char*);
+
+void copypw(char**,char*);
+
+void main()
+{
+ char el[81],pl[81];
+ clrscr();
+ /*get a whole line of text to be translated*/
+ printf("Enter an English line(#quit to end):");
+ gets(el);
+ while(strcmp(el,"#quit"))
+  {
+   /*translate line*/
+   translateline(el,pl);
+   /*output piglatin line*/
+   printf("\nPig Latin Translation:\n");
+   puts(pl);
+   /*get a whole line of text to be translated*/
+   printf("\nEnter an English line(#quit to end):");
+   gets(el);
+  }
+
+}
+
+void translateline(char el[] ,char pl[])
+{
+ /*translates line to pig latin*/
+ char ew[21],pw[21];
+ char *ep,*pp;
+ int a;
+ /*ep and pp point to current position in the translation process*/
+ ep = el;
+ pp = pl;
+ while(*ep != 0)
+  {
+	if(isalpha(*ep))
+	 {
+	  /*if letter is a alpha it must be the start of a word to translate*/
+	  extract(&ep,ew);
+	  translateword(ew,pw);
+	  copypw(&pp,pw);
+	 }
+	 else
+	  {
+		/*else just copy it unchanged to the pig latin line*/
+		*pp = *ep;
+		ep++;
+		pp++;
+	  }
+  }
+ /*terminate string*/
+ *pp = '\0';
+}
+
+int isvowel(char c)
+ {
+  /*function determines if c is a vowel or not*/
+  c = tolower(c);
+  if((c == 'a') || (c == 'e') || (c == 'i') || (c == 'o') || (c == 'u'))
+	return 1;
+	else return 0;
+
+ }
+
+int posvowel(char *wor)
+ {
+  /*returns position of vowel in wor. if no vowel returns -1*/
+  int vowlpos = -1,a;
+  a = 0;
+  while(a < strlen(wor) && vowlpos == -1)
+   {
+
+	if(isvowel(wor[a])) vowlpos = a;
+	a++;
+   }
+  return vowlpos;
+ }
+
+void extract(char **epp,char *ew)
+ {
+   /*extracts a single word from epp and puts it in ew*/
+   int a=0;
+   while(isalpha(*(*epp)))
+	{
+	 ew[a] = *(*epp);
+	 a++;
+	 (*epp)++;
+	}
+  ew[a] = 0;
+ }
+
+void translateword(char *ew,char *pw)
+ {
+  /*translates word ew to pig latin and stores the result in pw*/
+  int a;
+  char temp[21];
+  int pos;
+  pos = posvowel(ew);
+  if(pos == -1)
+   {
+    /*if ther are no vowels then just make exact copy*/
+    for(a=0;a<strlen(ew);a++)
+     {
+      pw[a] = ew[a];
+     }
+    pw[a] = '\0';
+
+   }
+   else
+    {
+     if(pos == 0)
+      {
+	 /*if the first letter is a vowel just add 'way'to original string*/
+	 strcpy(pw,ew);
+	 strcat(pw,"way");
+      }
+      else
+       {
+	/*else do pig latin*/
+	strncpy(temp,ew,pos);
+	temp[pos] = '\0';
+	temp[0] = tolower(temp[0]);
+	strcpy(pw,ew+pos);
+	strcat(pw,temp);
+	pw[strlen(ew)] = 'a';
+	pw[strlen(ew)+1] = 'y';
+	pw[strlen(ew)+2] = '\0';
+	if(isupper(ew[0])) pw[0] = toupper(pw[0]);
+       }
+
+     }
+ }
+
+void copypw(char **pp,char*pw)
+ {
+  /*copys word from pw and adds it to line pp*/
+  int a;
+  for(a=0;a<strlen(pw);a++)
+   {
+	 *(*pp) = pw[a];
+	 (*pp)++;
+   }
+ }
